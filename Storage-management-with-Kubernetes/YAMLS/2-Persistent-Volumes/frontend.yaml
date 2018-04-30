@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rsvp
+spec:
+  template:
+    metadata:
+      labels:
+        app: rsvp
+    spec:
+      containers:
+      - name: rsvp-app
+        image: teamcloudyuga/rsvpapp
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          periodSeconds: 30
+          timeoutSeconds: 1
+          initialDelaySeconds: 50
+        env:
+        - name: MONGODB_HOST
+          value: mongodb
+        ports:
+        - containerPort: 5000
+          name: web-port
