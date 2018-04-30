@@ -87,7 +87,6 @@ $ kubectl delete -f k8s/.
 $ git clone https://github.com/cloudyuga/e-cart.git
 $ cd e-cart
 $ git checkout eleventh-jaeger
-$ rm k8s/all-in-one-ecart.yaml
 $ kubectl apply -f k8s/.
 $ kubectl apply -f k8s/ingress/.
 ```
