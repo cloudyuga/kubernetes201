@@ -283,6 +283,17 @@ $ kubectl config set-context cloudyuga-context --cluster=minikube --namespace=cl
 User "cloudyuga" set.
 ```
 
+- Try to get list of pod running in `cloudyuga` namespace using `cloudyuga-context`.
+```
+$ kubectl --context=cloudyuga-context get po
+Error from server (Forbidden): pods is forbidden: User "cloudyuga" cannot list pods in the namespace "cloudyuga"
+```
+
+- Try to get list of pod running in `default` namespace using `cloudyuga-context`.
+```
+$ kubectl --context=cloudyuga-context get po -n default
+Error from server (Forbidden): pods is forbidden: User "cloudyuga" cannot list pods in the namespace "default"
+```
 
 ### Create ClusterRole and ClusterRolebindings for user `cloudyuga`.
 
