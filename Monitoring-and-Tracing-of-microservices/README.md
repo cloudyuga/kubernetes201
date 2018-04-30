@@ -96,6 +96,55 @@ $ kubectl apply -f k8s/ingress/.
 $ kubectl apply -f jaeger-all-in-one-template.yml
 ```
 
-- Access the E-cart application at http://ecart.cloudyuga.io . Open the E-Cart application, register user and make some entries, place some orders.
+- Verify all the pods are running.
+```
+$ kubectl get pods
+NAME                                 READY     STATUS    RESTARTS   AGE
+cart-74f47f49c7-mg22r                1/1       Running   0          5m
+cartdb-7c694bcf4c-hzw2n              1/1       Running   0          5m
+catalogue-8dbdddc8b-qmjp7            2/2       Running   0          5m
+cataloguedb-7957fbc8bb-qrn2h         1/1       Running   0          5m
+frontend-77f664c78d-kvfn5            1/1       Running   0          5m
+jaeger-deployment-56b58f6bc6-p4v5q   1/1       Running   0          3m
+orders-756964f9b9-sc6vf              1/1       Running   0          5m
+ordersdb-595775f769-vv674            1/1       Running   0          5m
+payment-589f8d9cdc-zq4rl             1/1       Running   0          5m
+paymentdb-78945d9869-49jdp           1/1       Running   0          5m
+user-6bdb647bc5-4plbv                2/2       Running   0          5m
+userdb-7cdd5c8bbf-chn8k              1/1       Running   0          5m
+```
 
-- Access the Jaeger UI at http://tracing.cloudyuga.io and find out tracing between various microservices.
+- Take a look at the services. 
+```
+kubectl get svc
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                        AGE
+cart               ClusterIP   10.106.30.24     <none>        5003/TCP                       5m
+cartdb             ClusterIP   10.108.137.92    <none>        27017/TCP                      5m
+catalogue          ClusterIP   10.100.49.188    <none>        5001/TCP                       5m
+cataloguedb        ClusterIP   10.106.101.48    <none>        27017/TCP                      5m
+frontend           NodePort    10.97.79.32      <none>        5000:30198/TCP                 5m
+jaeger-agent       ClusterIP   None             <none>        5775/UDP,6831/UDP,6832/UDP     3m
+jaeger-collector   ClusterIP   10.105.80.137    <none>        14267/TCP,14268/TCP,9411/TCP   3m
+jaeger-query       NodePort    10.99.68.246     <none>        80:31776/TCP                   3m
+kubernetes         ClusterIP   10.96.0.1        <none>        443/TCP                        3h
+orders             ClusterIP   10.96.44.158     <none>        5004/TCP                       5m
+ordersdb           ClusterIP   10.105.202.107   <none>        27017/TCP                      5m
+payment            ClusterIP   10.100.67.104    <none>        5005/TCP                       5m
+paymentdb          ClusterIP   10.107.13.147    <none>        27017/TCP                      5m
+user               ClusterIP   10.108.36.28     <none>        5002/TCP                       5m
+userdb             ClusterIP   10.102.206.172   <none>        27017/TCP                      5m
+zipkin             ClusterIP   None             <none>        9411/TCP                       3m
+```
+
+- Take a look at ingress.
+```
+$ kubectl get ing
+NAME              HOSTS                  ADDRESS          PORTS     AGE
+ecart-ingress     ecart.cloudyuga.io     188.166.59.139   80        8m
+tracing-ingress   tracing.cloudyuga.io   188.166.59.139   80        6m
+
+```
+
+- Access the E-cart application at http://ecart.cloudyuga.io/ . Open the E-Cart application, register user and make some entries, place some orders.
+
+- Access the Jaeger UI at http://tracing.cloudyuga.io/ and find out tracing between various microservices.
