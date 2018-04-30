@@ -70,41 +70,38 @@ secret-env                 1/1       Running   0          6s
 ```
 Exec into the pod `secret-env` and get the environment varables
 ```
-$ kubectl exec -it secret-env sh
-# printenv
-
-MONGODB_PORT_27017_TCP=tcp://10.106.149.93:27017
-KUBERNETES_SERVICE_PORT=443
-KUBERNETES_PORT=tcp://10.96.0.1:443
-RSVP_PORT_80_TCP_ADDR=10.111.126.233
+$ kubectl exec -it secret-env printenv
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=secret-env
-RSVP_PORT_80_TCP_PORT=80
-RSVP_PORT_80_TCP_PROTO=tcp
-HOME=/root
+TERM=xterm
 SECRET_PASSWORD=cloudyuga123
 
-RSVP_PORT_80_TCP=tcp://10.111.126.233:80
-TERM=xterm
-MONGODB_SERVICE_HOST=10.106.149.93
-KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
-NGINX_VERSION=1.9.1-1~jessie
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-KUBERNETES_PORT_443_TCP_PORT=443
-KUBERNETES_PORT_443_TCP_PROTO=tcp
-MONGODB_SERVICE_PORT=27017
-MONGODB_PORT=tcp://10.106.149.93:27017
 SECRET_USERNAME=cloudyuga
 
-RSVP_SERVICE_HOST=10.111.126.233
-MONGODB_PORT_27017_TCP_ADDR=10.106.149.93
-MONGODB_PORT_27017_TCP_PORT=27017
-KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_SERVICE_PORT=443
+NGINXSVC_PORT=tcp://10.102.195.16:80
 KUBERNETES_SERVICE_PORT_HTTPS=443
-MONGODB_PORT_27017_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PORT=443
+NGINXSVC_PORT_80_TCP=tcp://10.102.195.16:80
+NGINXSVC_SERVICE_PORT_HTTPS=443
+NGINXSVC_PORT_80_TCP_PROTO=tcp
+NGINXSVC_PORT_443_TCP_ADDR=10.102.195.16
 KUBERNETES_SERVICE_HOST=10.96.0.1
-PWD=/
-RSVP_SERVICE_PORT=80
-RSVP_PORT=tcp://10.111.126.233:80
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+NGINXSVC_SERVICE_HOST=10.102.195.16
+NGINXSVC_PORT_80_TCP_ADDR=10.102.195.16
+NGINXSVC_PORT_443_TCP=tcp://10.102.195.16:443
+NGINXSVC_PORT_443_TCP_PROTO=tcp
+NGINXSVC_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+NGINXSVC_SERVICE_PORT=80
+NGINXSVC_SERVICE_PORT_HTTP=80
+NGINXSVC_PORT_80_TCP_PORT=80
+NGINX_VERSION=1.9.1-1~jessie
+HOME=/root
+
 ```
 
 ## Using secrets as volumes 
@@ -229,7 +226,7 @@ spec:
 ```
 $ kubectl apply -f secret-demo.yaml 
 service "nginxsvc" created
-deployment "my-nginx" created
+deployment.extensions "my-nginx" created
 ```
 
 We have created the deployment and the service. Deployment is exposed using the NodePort. Unsecure service is running at the `http//<master-ip>:30080` while the secured service is running at the `https://<master-ip:30443`.
