@@ -7,7 +7,7 @@ ConfigMaps are quite similar to Secrets, ConfigMaps are designed to work more co
 
 ## Create A ConfigMaps.
 
-Create ConfigMaps from following configuration file. Create following like yaml file.
+- Create ConfigMaps from following configuration file. Create following like yaml file.
 ```
 apiVersion: v1
 kind: ConfigMap
@@ -19,13 +19,13 @@ data:
   COMPANY: Customer1 Company Technology Pvt. Ltd.
 ```
 
-Deploy ConfigMaps from above yaml file.
+- Deploy ConfigMaps from above yaml file.
 ```
 $ kubectl create -f config.yaml
 configmap "customer1" created
 ```
 
-Get the list of ConfigMaps.
+- Get the list of ConfigMaps.
 ```
 $ kubectl get configmap
 NAME        DATA      AGE
@@ -33,7 +33,8 @@ customer1   3         1m
 ```
 
 ## ConfigMaps as Environment variables.
-Lets create following alike configuration file in which we have used the environment variables from the ConfigMaps.
+
+- Lets create following alike configuration file in which we have used the environment variables from the ConfigMaps.
 ```
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -80,13 +81,13 @@ spec:
 ```
 So the data we have enclosed in the `customer1` ConfigMap is now used as Environment Varialbles for `rsvp-app` container.
 
-Deploy the Frontend application with above configuration file.
+- Deploy the Frontend application with above configuration file.
 ```
 $ kubectl create -f rsvpconfig.yaml
-deployment "rsvp" created
+deployment.extensions "rsvp" created
 ```
 
-Lets create Backend for this Frontend and deploy it. Create follwoing like configuration yaml file.
+- Lets create Backend for this Frontend and deploy it. Create follwoing like configuration yaml file.
 ```
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -109,14 +110,13 @@ spec:
         - containerPort: 27017
 ```
 
-Deploy this Backend application.
+- Deploy this Backend application.
 ```
 $ kubectl create -f backend.yaml
-deployment "rsvp-db" created
+deployment.extensions "rsvp-db" created
 ```
 
-Get the list of Deployments.
-
+- Get the list of Deployments.
 ```
 $ kubectl get deploy
 NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
@@ -126,7 +126,7 @@ rsvp-db   1         1         1            1           2m
 
 Lets create A services for Frontend and backend.
 
-Create the service for Frontend from following configuration file.
+- Create the services for Frontend and Backend from following configuration file.
 ```
 apiVersion: v1
 kind: Service
@@ -142,16 +142,7 @@ spec:
     protocol: TCP
   selector:
     app: rsvp
-
-```
-Deploy Frontend Service.
-```
-$ kubectl create -f frontendservice.yaml
-service "rsvp" created
-```
-
-Create Service configuration file for Backend application.
-```
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -166,13 +157,15 @@ spec:
     appdb: rsvpdb
 ```
 
-Deploy the Backend service.
+- Deploy the services.
 ```
-$ kubectl create -f backendservice.yaml
+$ kubectl apply -f svc.yaml 
+service "rsvp" created
 service "mongodb" created
+
 ```
 
-Get list of Services.
+- Get list of Services.
 ```
 $ kubectl get svc
 
@@ -183,9 +176,10 @@ rsvp         10.103.96.230   <nodes>       80:30921/TCP   48s
 ```
 Now you can access your Frontend application at given port of master-IP and you can see there environment variable you have provided in ConfigMaps.
 
+
 ## ConfigMaps as Volumes 
 
-Create Following like Pod configuration file to demonstrate ConfigMaps as volume.
+- Create Following like Pod configuration file to demonstrate ConfigMaps as volume.
 ```
 apiVersion: v1
 kind: Pod
@@ -207,7 +201,7 @@ spec:
 ```
 In this configuration file, the configuration data enclosed in the ConfigMap `customer1` is mounted as volume. So the container mounting this ConfigMap volume will get the configuration data.
 
-Deploy the pod with above configuration file.
+- Deploy the pod with above configuration file.
 ```
 $ kubectl create -f configvolume.yaml
 pod "con-demo" created
