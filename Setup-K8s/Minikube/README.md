@@ -10,7 +10,7 @@
 * VT-x/AMD-v virtualization must be enabled in BIOS
 * Internet connection on first run
 
-## 5.1 Minikube Installation
+## Minikube Installation
 
 ### Linux (Ubuntu 16.04)
 
