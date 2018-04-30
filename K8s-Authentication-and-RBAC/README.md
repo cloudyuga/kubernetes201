@@ -255,6 +255,35 @@ node-csr-abvQ8DWMb_hi1HEJ3ADMKT2unLzErLaSQ9iRrDA3oVM   2h        system:bootstra
 $ kubectl certificate approve cloudyuga-csr
 certificatesigningrequest "cloudyuga-csr" approved
 ```
+
+### Create new context for the user cloudyuga.
+
+- Lets download the certificate from the CSR.
+```
+$ kubectl get csr cloudyuga-csr -o jsonpath='{.status.certificate}' \
+    | base64 -d > cloudyuga.crt
+
+```
+
+- Set the credentials for the user.
+```
+$ kubectl config set-credentials cloudyuga --client-certificate=cloudyuga.crt --client-key=cloudyuga.key 
+User "cloudyuga" set.
+```
+
+- Set the context for user [For Kubernets cluster].
+```
+$ kubectl config set-context cloudyuga-context --cluster=kubernetes --namespace=cloudyuga --user=cloudyuga
+User "cloudyuga" set.
+```
+
+- Set the context for user [MINIKUBE].
+```
+$ kubectl config set-context cloudyuga-context --cluster=minikube --namespace=cloudyuga --user=cloudyuga
+User "cloudyuga" set.
+```
+
+
 ### Create ClusterRole and ClusterRolebindings for user `cloudyuga`.
 
 ```
@@ -289,32 +318,6 @@ roleRef:
 $ kubectl apply -f cloudyuga-rbac.yaml 
 clusterrolebinding "cloudyuga-crb" created
 clusterrole "cloudyuga-cr" created
-```
-
-- Lets download the certificate from the CSR.
-```
-$ kubectl get csr cloudyuga-csr -o jsonpath='{.status.certificate}' \
-    | base64 -d > cloudyuga.crt
-
-```
-
-### Create new context for the user cloudyuga.
-- Set the credentials for the user.
-```
-$ kubectl config set-credentials cloudyuga --client-certificate=cloudyuga.crt --client-key=cloudyuga.key 
-User "cloudyuga" set.
-```
-
-- Set the context for user [For Kubernets cluster].
-```
-$ kubectl config set-context cloudyuga-context --cluster=kubernetes --namespace=cloudyuga --user=cloudyuga
-User "cloudyuga" set.
-```
-
-- Set the context for user [MINIKUBE].
-```
-$ kubectl config set-context cloudyuga-context --cluster=minikube --namespace=cloudyuga --user=cloudyuga
-User "cloudyuga" set.
 ```
 
 ### Test the user `cloudyuga`.
