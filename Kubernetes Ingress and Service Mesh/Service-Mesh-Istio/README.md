@@ -93,9 +93,17 @@ istio-pilot     ClusterIP   10.99.149.121   <none>        15003/TCP,443/TCP     
 
  We have deployed Istio in our kubernetes cluster.
  
+## BookInfo
+ 
+ 
 - Deploy the simple `BookInfo` application in the kubernetes cluster.[If you have enable sidecar injection]
 ```
 $ kubectl apply -f samples/bookinfo/kube/bookinfo.yaml
+```
+
+If you are using manual sidecar injection, use the following command instead:
+```
+$ kubectl apply -f <(istioctl kube-inject --debug -f samples/bookinfo/kube/bookinfo.yaml)
 ```
  
 - Check the lists of services and pods running.
