@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: con-demo
+spec:
+  containers:
+    - name: test-container
+      image: nginx:1.9.1
+      command: [ "/bin/sh", "-c", "ls /tmp/config/" ]
+      volumeMounts:
+      - name: config-volume
+        mountPath: /tmp/config
+  volumes:
+    - name: config-volume
+      configMap:
+        name: customer1
+  restartPolicy: Never
