@@ -53,7 +53,7 @@ istio-pilot-65648c94fb-2s4w7              2/2       Running   0          13m
 istio-sidecar-injector-844b9d4f86-n2s7c   1/1       Running   0          11m
 
 ```
-Make sure that `istio-pilot-*`, `istio-mixer-*`, `istio-ingress-*`, `istio-ca-*`, and, optionally, `istio-initializer-*` Pods are up and running properly.
+Make sure that `istio-pilot-*`, `istio-mixer-*`, `istio-ingress-*`, `istio-ca-*` Pods are up and running properly.
 
 - Check desired services are running in the cluster.
 ```
