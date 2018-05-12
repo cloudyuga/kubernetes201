@@ -42,33 +42,6 @@ spec:
 $ kubectl apply -f install/kubernetes/istio.yaml
 ```
 
-#### Optional: If your cluster has Kubernetes alpha features enabled, and you wish to enable a automatic injection of sidecar, install the Istio-Initializer:
-
-- Create signed cert/key pair. Use install/kubernetes/webhook-create-signed-cert.sh to generate a cert/key pair signed by the Kubernetes’ CA.
-```
-$ ./install/kubernetes/webhook-create-signed-cert.sh \
-    --service istio-sidecar-injector \
-    --namespace istio-system \
-    --secret sidecar-injector-certs
-```
-
-- Install the sidecar injection configmap.
-```
-$ kubectl apply -f install/kubernetes/istio-sidecar-injector-configmap-release.yaml
-```
-
-- Set the caBundle in the webhook install YAML that the Kubernetes api-server uses to invoke the webhook.
-```
-$ cat install/kubernetes/istio-sidecar-injector.yaml | \
-     ./install/kubernetes/webhook-patch-ca-bundle.sh > \
-     install/kubernetes/istio-sidecar-injector-with-ca-bundle.yaml
-```
-
-- Install the sidecar injector webhook.
-```
-$ kubectl apply -f install/kubernetes/istio-sidecar-injector-with-ca-bundle.yaml
-```
-
 - Verify the Installation by checking deployed pods.
 ```
 $ kubectl get pods -n istio-system
@@ -96,12 +69,7 @@ istio-pilot     ClusterIP   10.99.149.121   <none>        15003/TCP,443/TCP     
 ## BookInfo
  
  
-- Deploy the simple `BookInfo` application in the kubernetes cluster.[If you have enable sidecar injection]
-```
-$ kubectl apply -f samples/bookinfo/kube/bookinfo.yaml
-```
-
-If you are using manual sidecar injection, use the following command instead:
+- Deploy the simple `BookInfo` application in the kubernetes cluster
 ```
 $ kubectl apply -f <(istioctl kube-inject --debug -f samples/bookinfo/kube/bookinfo.yaml)
 ```
