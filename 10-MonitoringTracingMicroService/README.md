@@ -80,7 +80,7 @@ $ git checkout ninth-prometheus
 $ kubectl delete -f k8s/.
 ```
 
-## Traciing Microservices. 
+## Tracing Microservices. 
 
 ### Steps to run the application.
 ```
@@ -142,7 +142,6 @@ $ kubectl get ing
 NAME              HOSTS                  ADDRESS          PORTS     AGE
 ecart-ingress     ecart.cloudyuga.io     188.166.59.139   80        8m
 tracing-ingress   tracing.cloudyuga.io   188.166.59.139   80        6m
-
 ```
 
 - Access the E-cart application at http://ecart.cloudyuga.io/ . Open the E-Cart application, register user and make some entries, place some orders.
