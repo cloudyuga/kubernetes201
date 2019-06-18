@@ -1,40 +1,49 @@
 ### Carry out following deployments first.
 
 #### Create the Namespace.
-```
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml \
+
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml \
     | kubectl apply -f -
 
 ```
 
 #### Create default Backend for the Nginx ingress controller.
-```
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml \
+
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml \
     | kubectl apply -f -
 
 ```
 
 #### Create ConfigMap for the Nginx ingress controller.
-```
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml \
-    | kubectl apply -f -
-    
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml \
-    | kubectl apply -f -
 
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml \
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml \
+    | kubectl apply -f -
+```
+```command    
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml \
+    | kubectl apply -f -
+```
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml \
     | kubectl apply -f -
 ```
 
 #### Set the RBAC rules.
-```
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
+
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
     | kubectl apply -f -
 ```
 
 Create the `Nginx ingress controller` configuration file as shown below.
+
+```command
+vi configs/ingress-controller.yaml
 ```
-$ vi ingress-controller.yaml
+```yaml
 
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -83,15 +92,18 @@ spec:
 ```
 
 Deploy the Nginx Ingress controller.
-```
-$ kubectl create -f ingress-controller.yaml
+
+```command
+kubectl create -f configs/ingress-controller.yaml
 ```
 ### Blue and Green application
 
 Create and deploy the Blue application from following configuration file.
-```
-$ vim blue.yaml
 
+```command
+vim configs/blue.yaml
+```
+```yaml
 
 ---
 apiVersion: extensions/v1beta1
@@ -127,16 +139,19 @@ spec:
 
 
 ```
-Deploy the application
-```
-$ kubectl create -f blue.yaml
-```
-Create and deploy the Green application from following configuration file.
 
+#### Deploy the application.
+
+```command
+kubectl create -f configs/blue.yaml
 ```
-$ vim green.yaml
+####Create and deploy the Green application from following configuration file.
 
+```command
+vim configs/green.yaml
+```
 
+```yaml
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -171,16 +186,19 @@ spec:
 
 ```
 
-Deploy the Green application.
-```
-$ kubectl create -f green.yaml
+#### Deploy the Green application.
+
+```command
+kubectl create -f configs/green.yaml
 ```
 
-Create a Path based ingress object.
+#####Create a Path based ingress object.
+
+```command
+vim configs/ingress_path.yaml
 ```
-$ vim ingress_path.yaml
 
-
+```yaml
 
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -204,23 +222,30 @@ spec:
 
 ```
 
-Deploy this ingress object.
-```
-$ kubectl create -f ingress_path.yaml
+### Deploy this ingress object.
+
+```command
+kubectl create -f configs/ingress_path.yaml
 ```
 
-Get the status of ingress.
+#### Get the status of ingress.
+
+```command
+kubectl get ing
 ```
-$ kubectl get ing
+```output
 NAME      HOSTS          ADDRESS           PORTS     AGE
 path      cy.myweb.com   165.227.120.162   80        25m
 ```
 
- Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
+- Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
  
  Curl to the `cy.myweb.com/blue` and see the output of curl.
+
+```command
+curl cy.myweb.com/blue
 ```
-$ curl cy.myweb.com/blue
+```output
 <!DOCTYPE html>
 <html>
 <body bgcolor="Blue">
@@ -234,11 +259,15 @@ $ curl cy.myweb.com/blue
 </html>
 
 ```
-You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
+- You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
 
-Curl to the `cy.myweb.com/green` and see the output of curl.
+- Curl to the `cy.myweb.com/green` and see the output of curl.
+
+```command
+curl cy.myweb.com/green
 ```
-$ curl cy.myweb.com/green
+```output
+
 <!DOCTYPE html>
 <html>
 <body bgcolor="Green">
@@ -252,14 +281,15 @@ $ curl cy.myweb.com/green
 </html>
 
 ```
-You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
+- You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
-## Delete Services, Deployments and Ingress.
-```
-$ kubectl delete deploy blue green
-$ kubectl delete svc blue green
-$ kubectl delete ing path
+### Delete Services, Deployments and Ingress.
+
+```command
+kubectl delete deploy blue green
+kubectl delete svc blue green
+kubectl delete ing path
 ```
 
 
