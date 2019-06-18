@@ -44,7 +44,7 @@ The key's randomart image is:
 - We are asuming your public keys and private keys are located at `~/.ssh/id_rsa.pub` and `~/.ssh/id_rsa`
 
 
-## Create VM for Docker on DigitalOcean.
+## Create VMs for creating K8s on DigitalOcean.
 
 - Start `tmux`. 
 
