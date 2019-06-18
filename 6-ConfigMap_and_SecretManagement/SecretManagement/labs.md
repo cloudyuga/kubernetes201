@@ -4,16 +4,20 @@ Secrets kubernetes object designed to store and manage sensitive information tha
 ## Create Secret.
 
 Suppose we want to share the secret value `cloudyuga` as `username` and `cloudyuga123` as `password` in Kubernetes Secret specification file. Then lets encode these values.
-```
-$ echo cloudyuga|base64
-Y2xvdWR5dWdhCg==
 
-$ echo cloudyuga123|base64
+```command
+echo cloudyuga|base64
+Y2xvdWR5dWdhCg==
+```
+```command
+echo cloudyuga123|base64
 Y2xvdWR5dWdhMTIzCg==
 ```
 
 From above encoded data create configuration file for creating secret.
-```
+
+```yaml
+
 apiVersion: v1
 kind: Secret
 metadata:
@@ -22,19 +26,25 @@ type: Opaque
 data:
   username: Y2xvdWR5dWdhCg==
   password: Y2xvdWR5dWdhMTIzCg==
+
 ```
 Here in data section we have used encoded values of the `username` and `password`
 
 Create secrete from above file.
+
+```command
+kubectl create -f configs/secret.yaml
 ```
-$ kubectl create -f secret.yaml
+```
 secret "mysecret" created
 ```
 
 ## Secret as Environment variables.
 
 Create a configuration file of pod as shown below. In which we have given the Environment variable via secret. 
-```
+
+```yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -58,19 +68,28 @@ spec:
 ```
 
 Create a pod from above configuration.
+
+```command
+kubectl create -f configs/secret-env.yaml
 ```
-$ kubectl create -f secret-env.yaml
+```
 pod "secret-env" created
 ```
 Get list of Running pods.
+
+```command
+kubectl get po
 ```
-$ kubectl get po
+```
 NAME                       READY     STATUS    RESTARTS   AGE
 secret-env                 1/1       Running   0          6s
 ```
-Exec into the pod `secret-env` and get the environment varables
+Exec into the pod `secret-env` and get the environment varables.
+
+```command
+kubectl exec -it secret-env printenv
 ```
-$ kubectl exec -it secret-env printenv
+```
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=secret-env
 TERM=xterm
@@ -107,7 +126,8 @@ HOME=/root
 ## Using secrets as volumes 
 
 Create a configuration file for pod. In which we have used secret as volume.
-```
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -132,22 +152,31 @@ spec:
 ```
 
 Create a pod from above configuration
+
+```command
+kubectl create -f configs/secret-vol.yaml
 ```
-$ kubectl create -f secret-vol.yaml
+```
 pod "nginx" created
 ```
 
 Get the list of running pods.
+
+```command
+kubectl get pod
 ```
-$ kubectl get pod
+```
 NAME                       READY     STATUS    RESTARTS   AGE
 nginx                      1/1       Running   0          1m
 secret-env                 1/1       Running   0          8m
 ```
 
 Exec into the pod `nginx` and check the mount path. Here we can find the Secret.
-```
+
+```command
 kubectl exec -it nginx sh
+```
+```command
 # cd /data/db
 # ls
 password  username
@@ -158,24 +187,30 @@ cloudyuga
 #
 ```
 ## Delete Pods and Secret.
-```
-$ kubectl delete po secret-env nginx
-$ kubectl delete secret mysecret
+
+```command
+kubectl delete po secret-env nginx
+kubectl delete secret mysecret
 ```
 
 # Secret Usage Demo.
 
-Pull the `secret.json` file which create the secret using the `nginx.key` and `nginx.crt`. Download this file and deploy this secret.
-``` 
-$ wget https://raw.githubusercontent.com/cloudyuga/k8slab/master/https-nginx/secret.json 
-$ kubectl apply -f secret.json 
+- Pull the `secret.json` file which create the secret using the `nginx.key` and `nginx.crt`. Download this file and deploy this secret.
+
+```command 
+wget https://raw.githubusercontent.com/cloudyuga/k8slab/master/https-nginx/secret.json 
+kubectl apply -f secret.json 
+```
+```
 secret "nginxsecret" created
 ```
 - Create a Nginx deployment to consume this secret.
+
+```command
+vim configs/secret-demo.yaml
 ```
-$ vim secret-demo.yaml
 
-
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -223,8 +258,11 @@ spec:
 ```
 
 - Deploy the above application.
+
+```command
+kubectl apply -f secret-demo.yaml 
 ```
-$ kubectl apply -f secret-demo.yaml 
+```
 service "nginxsvc" created
 deployment.extensions "my-nginx" created
 ```
