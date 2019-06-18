@@ -182,7 +182,7 @@ List the deployments.
 
 ```command
 kubectl get deploy
-
+```
 ```
 NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 rsvp      1         1         1            1           11m
