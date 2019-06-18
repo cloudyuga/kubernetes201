@@ -6,7 +6,7 @@ A volume is a directory, usually with some data in it. Volumes are accessible to
 ## Mounting volumes in different containers
 To demontrate this lets create Application which consist of a Frontend and Backend. Backend is database and we are going to mount the data in that Backend Pod.
 
-#### Frontend
+### Frontend
 
 - Create Deployment configuration for Frontent as shown below.
 
@@ -77,7 +77,7 @@ kubectl create -f configs/1-Volumes/frontendservice.yaml
 ```
 service "rsvp" created
 ```
-#### Backend.
+### Backend.
 
 Create following like Deployment configuration file. In which have mounted the `voldb` volume in the container.
 
@@ -285,7 +285,7 @@ NAME        STATUS    VOLUME    CAPACITY   ACCESSMODES   STORAGECLASS   AGE
 myclaim-1   Bound     pv0001    1Gi        RWO                          4s
 ```
 
-#### Frontend
+### Frontend
 
 - Create Deployment configuration for Frontent as shown below.
 
@@ -358,7 +358,7 @@ kubectl create -f configs/2-Persistent-Volumes/frontendservice.yaml
 service "rsvp" created
 ```
 
-#### Backend
+### Backend
 
 Lets Modify above Backend configuration file to demonstrate use of PVC.
 
