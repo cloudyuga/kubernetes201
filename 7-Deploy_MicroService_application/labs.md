@@ -2,16 +2,19 @@
 ![Monolith Application](./Monolith.jpeg?raw=true)
 
 ### Steps to run the application.
-```
-$ git clone https://github.com/cloudyuga/e-cart.git
-$ cd e-cart
-$ git checkout ninth-prometheus
-$ kubectl apply -f k8s/.
+
+```command
+git clone https://github.com/cloudyuga/e-cart.git
+cd e-cart
+git checkout ninth-prometheus
+kubectl apply -f k8s/.
 ```
 ### Verify that following services are up and running.
-```
-$ kubectl get svc
 
+```command
+kubectl get svc
+```
+```
 NAME          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 cart          ClusterIP   10.100.172.16    <none>        5003/TCP            1m
 cartdb        ClusterIP   10.107.160.190   <none>        27017/TCP           1m
@@ -29,8 +32,11 @@ userdb        ClusterIP   10.103.183.216   <none>        27017/TCP           1m
 ```
 
 ### Verify the Pods.
+
+```commands
+kubectl get pods
 ```
-$ kubectl get pods
+```
 NAME                          READY     STATUS    RESTARTS   AGE
 cart-789fdf9f9d-l5954         1/1       Running   0          2m
 cartdb-84bcdf5d6c-9qnn5       1/1       Running   0          2m
@@ -58,8 +64,9 @@ Lets open the Ecart application and make some entries.
 - The front end application is running at the `31500` port of Node IP. Open the E-Cart application, register user and make some entries, place some orders.
 
 ###  Clean the application.
-```
-$ cd e-cart
-$ git checkout ninth-prometheus
-$ kubectl delete -f k8s/.
+
+```command
+cd e-cart
+git checkout ninth-prometheus
+kubectl delete -f k8s/.
 ```
