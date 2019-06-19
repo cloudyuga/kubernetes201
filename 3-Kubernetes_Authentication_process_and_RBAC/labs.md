@@ -7,7 +7,7 @@ For e.g.
 - Secure your cluster by granting privileged operations (accessing secrets, for example) only to admin users.
 - Force user authentication in your cluster.
 
-Lets get familier with following terms.
+Lets get familiar with following terms.
 - Rules: A rule is a set of operations (verbs) that can be carried out on a group of resources which belong to different API Groups.
 - Roles :  In a Role, the rules are applicable to a single namespace.
 - ClusterRoles: In a ClusterRole is cluster-wide, so the rules are applicable to more than one namespace. 
@@ -55,7 +55,7 @@ spec:
 - Create the CSR.
 
 ```command
-kubectl create -f signingrequest.yaml 
+kubectl create -f configs/signingrequest.yaml 
 ```
 ```
 certificatesigningrequest "cloudyuga-csr" created
@@ -86,13 +86,13 @@ certificatesigningrequest "cloudyuga-csr" approved
 - Set the credentials for the user.
 
 ```command
-kubectl config set-credentials cloudyuga --client-certificate=cloudyuga.crt --client-key=cloudyuga.key 
+sudo kubectl config set-credentials cloudyuga --client-certificate=cloudyuga.crt --client-key=cloudyuga.key 
 ```
 
 - Set the context for user.
 
 ```command
-kubectl config set-context cloudyuga-context --cluster=kubernetes --namespace=cloudyuga --user=cloudyuga
+sudo kubectl config set-context cloudyuga-context --cluster=kubernetes --namespace=cloudyuga --user=cloudyuga
 ```
 
 ### Test the user `cloudyuga`.
@@ -105,6 +105,13 @@ kubectl run nginx --image=nginx:alpine
 ```
 deployment "nginx" created
 ```
+- Create a namespace `cloudyuga`
+
+```command
+kubectl create ns cloudyuga
+
+```
+
 ```command
 kubectl run nginx --image=nginx:alpine -n cloudyuga
 ```

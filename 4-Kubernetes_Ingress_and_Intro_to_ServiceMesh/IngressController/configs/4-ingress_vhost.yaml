@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: virtual
+spec:
+  rules:
+  - host: blue.cy.guru
+    http:
+      paths:
+      - backend:
+          serviceName: blue
+          servicePort: 80
+  - host: green.cy.guru
+    http:
+      paths:
+      - backend:
+          serviceName: green
+          servicePort: 80
