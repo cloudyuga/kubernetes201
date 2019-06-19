@@ -7,10 +7,14 @@ Suppose we want to share the secret value `cloudyuga` as `username` and `cloudyu
 
 ```command
 echo cloudyuga|base64
+```
+```
 Y2xvdWR5dWdhCg==
 ```
 ```command
 echo cloudyuga123|base64
+```
+```
 Y2xvdWR5dWdhMTIzCg==
 ```
 
@@ -176,14 +180,13 @@ Exec into the pod `nginx` and check the mount path. Here we can find the Secret.
 ```command
 kubectl exec -it nginx sh
 ```
-```command
-# cd /data/db
-# ls
-password  username
-# cat password
-cloudyuga123
-# cat username
-cloudyuga
+```
+cd /data/db
+ls
+cat password
+# cloudyuga123
+cat username
+# cloudyuga
 #
 ```
 ## Delete Pods and Secret.
@@ -260,7 +263,7 @@ spec:
 - Deploy the above application.
 
 ```command
-kubectl apply -f secret-demo.yaml 
+kubectl apply -f configs/secret-demo.yaml 
 ```
 ```
 service "nginxsvc" created

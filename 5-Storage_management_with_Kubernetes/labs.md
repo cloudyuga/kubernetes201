@@ -500,88 +500,13 @@ kubectl delete pv pv0001
 ```
 
 
-# Dynamic Volume Provisioning with ROOK.
+# Dynamic Volume Provisioning.
 
 
-## Rook
+## Storage Classes and How to Use them
 
-Rook turns distributed storage software into a self-managing, self-scaling, and self-healing storage services. It does this by automating deployment, bootstrapping, configuration, provisioning, scaling, upgrading, migration, disaster recovery, monitoring, and resource management. Rook uses the facilities provided by the underlying cloud-native container management, scheduling and orchestration platform to perform its duties.
+StorageClasses are the foundation of dynamic provisioning, allowing cluster administrators to define abstractions for the underlying storage platform. Users simply refer to a StorageClass by name in the PersistentVolumeClaim (PVC) using the “storageClassName” parameter.
 
-We would be orchestrating the storage using Rook, which is the storage orchestrator for Kubernetes. To orchestrate the block storage, it uses Ceph. Ceph is a Software Defined Storage, which can combine and utilize the storage from different participant nodes and give us a storage pool. We can get the storage pool as Object, Block or file-system.
-
-We would need to install Ceph on all nodes, so you would have to login to each node seperately run following command :-
-
-##### On all the nodes of cluster install `ceph`.
-
-```command
-sudo apt-get install ceph-fs-common ceph-common -y
-```
-
-### Deploy Rook in the kubernetes cluster.
-
-With your Kubernetes cluster running, Rook can be setup and deployed by simply creating the `rook-operator` deployment and creating a rook cluster. 
-
-- Clone the git repository for the Rook.
-
-```command
-git clone https://github.com/rook/rook.git
-cd rook
-```
-
-- Deploy the Rook operator.
-
-```command
-cd cluster/examples/kubernetes
-kubectl create -f rook-operator.yaml
-```
-
-- Verify the rook-operator and rook-agents pods are in the `Running` state before proceeding.
-
-```command
-kubectl -n rook-system get pod
-```
-```
-NAME                            READY     STATUS    RESTARTS   AGE
-rook-agent-chf2f                1/1       Running   0          14m
-rook-agent-hv4kn                1/1       Running   0          14m
-rook-operator-bf85b568f-q4f6s   1/1       Running   0          15m
-```
-
-- Deploy rook-cluster
-
-```command
-kubectl create -f rook-cluster.yaml 
-```
-
-- List the pods in `rook` namespace.
-
-```command
-kubectl -n rook get pod
-```
-```
-NAME                              READY     STATUS    RESTARTS   AGE
-rook-api-541965964-t5fzd          1/1       Running   0          2h
-rook-ceph-mgr0-1951369517-xq2xj   1/1       Running   0          2h
-rook-ceph-mon0-4kn3l              1/1       Running   0          2h
-rook-ceph-mon1-0vn9k              1/1       Running   0          2h
-rook-ceph-mon2-fjb8w              1/1       Running   0          2h
-rook-ceph-osd-38jd0               1/1       Running   0          2h
-rook-ceph-osd-3j7b8               1/1       Running   0          2h
-```
-
-- Create the Storage Class and resource pool.
-
-This file specify new storage class `rook-block` the provisoner of this class is `rook.io/block`. To this storageclass we have specified `pool`parameter which we have created earlier in the same file.
-
-- Deploy this configuration file.
-
-```command
-kubectl create -f rook-storageclass.yaml
-```
-```
-pool "replicapool" created
-storageclass "rook-block" created
-```
 
 - Get the list of `storageclass`.
 
@@ -589,21 +514,12 @@ storageclass "rook-block" created
 kubectl get storageclass
 ```
 ```
-NAME                 TYPE
-rook-block           rook.io/block                
+NAME                         PROVISIONER                 AGE
+do-block-storage (default)   dobs.csi.digitalocean.com   6h3m
+       
 ```
 
-- Get the list of `pool`.
-
-```command
-kubectl get pool -n rook
-```
-```
-NAME          KIND
-replicapool   Pool.v1alpha1.rook.io
-```
-
-#### Deploy the RSVP application using PVC with `rook-block storageclass`.
+#### Deploy the RSVP application using PVC with `do-block storageclass`.(Currently default storage class is `do-block-storage`)
 
 - Deploy RSVP frontend using following configuration file.
 
@@ -650,7 +566,7 @@ This file contains Frontend pod and the service for that pod.
 - Create the deployment using the deployment.
 
 ```command
-kubectl create -f configs/3-Dynamic-Volume-Provisioning-with-ROOK/frontend.yaml
+kubectl create -f configs/3-Dynamic-Volume-Provisioning/frontend.yaml
 ```
 
 - Create the backend deployment, Persistent Volume claim, and Backend service from the following configuration.
@@ -691,7 +607,7 @@ metadata:
   labels:
     appdb: rsvpdb
 spec:
-  storageClassName: rook-block
+  storageClassName: do-block-storage
   accessModes:
   - ReadWriteOnce
   resources:
@@ -717,7 +633,7 @@ spec:
 - Create the backend deployment.
 
 ```command
-kubectl create -f configs/3-Dynamic-Volume-Provisioning-with-ROOK/backend.yaml
+kubectl create -f configs/3-Dynamic-Volume-Provisioning/backend.yaml
 ```
 
 - Check the PVC.
@@ -726,22 +642,17 @@ kubectl create -f configs/3-Dynamic-Volume-Provisioning-with-ROOK/backend.yaml
 kubectl get pvc
 ```
 ```
-NAME      STATUS    VOLUME                                     CAPACITY   ACCESSMODES   STORAGECLASS   AGE
-myclaim   Bound     pvc-0286d7b1-99f2-11e7-94db-080027a8df8b   1Gi        RWO           rook-block     1h
+NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS       AGE
+myclaim   Bound    pvc-a20c34ac-9291-11e9-be70-1e9c811fb098   1Gi        RWO            do-block-storage   10s
 ```
 
 Try to access the application at Nodeport. Make some entries in that RSVP application. Delete the backend and  deploy backend again. You will see our older entries are still present in that page.
 
-### Set `rook-block` as your default storage claas [Optional].
 
-- Set rook as your default storage class.
-
-```command
-kubectl patch storageclass rook-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
 ## Delete Services, Deployments and PVC.
 
-```comman
+```command
 kubectl delete svc mongodb rsvp 
 kubectl delete deploy rsvp rsvp-db
 kubectl delete pvc myclaim

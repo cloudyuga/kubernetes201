@@ -20,7 +20,7 @@ chmod 700 get_helm.sh
 Kubernetes enables access control for workloads by providing [Service Accounts](https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/). A service account represents an identity for processes that run in a pod. When a process is authenticated through a service account, it can contact the API server and access cluster resources. If a pod doesn’t have an assigned service account, it gets the default service account. 
 
 ```command
-cat rbac_helm.yaml
+cat configs/rbac-helm.yaml
 ```
 ```yaml
 apiVersion: v1
@@ -58,7 +58,7 @@ subjects:
 - Deploy above configuration.
 
 ```command
-kubectl apply -f configs/rbac_helm.yaml 
+kubectl apply -f configs/rbac-helm.yaml
 ```
 
 This will create `tiller` Service Account and it also create a clusterrole and bind this clusterrole to created ServiceAccount. 
@@ -120,11 +120,234 @@ kubectl --namespace kube-system get pods | grep tiller
 - Install Prometheus
 
 ```command
-helm install --name prometheus --set rbac.create='true' --set server.service.type='NodePort' --set server.ingress.enabled='true',server.ingress.hosts={prometheus.cloudyuga.io} stable/prometheus
+helm install --name prometheus \
+--set server.service.type=NodePort,pushgateway.persistentVolume.enabled=false,server.persistentVolume.enabled=false,alertmanager.persistentVolume.enabled=false  \
+stable/prometheus
 ```
+
+- Get the list of the Pods.
+
+```command
+kubectl get pods
+```
+```
+prometheus-alertmanager-5ddc7cbfd4-8gqgg         2/2     Running   0          20m
+prometheus-kube-state-metrics-848699f4d6-68rrd   1/1     Running   0          20m
+prometheus-node-exporter-58b7z                   1/1     Running   0          20m
+prometheus-pushgateway-56cd66b4bd-4x5fj          1/1     Running   0          20m
+prometheus-server-647bd99bcd-tqlcw               2/2     Running   0          20m
+```
+- Get the list of the services.
+
+```command
+kubectl get svc
+```
+```output
+prometheus-alertmanager         ClusterIP   10.245.80.251   <none>        80/TCP         21m
+prometheus-kube-state-metrics   ClusterIP   None            <none>        80/TCP         21m
+prometheus-node-exporter        ClusterIP   None            <none>        9100/TCP       21m
+prometheus-pushgateway          ClusterIP   10.245.211.75   <none>        9091/TCP       21m
+prometheus-server               NodePort    10.245.70.23    <none>        80:31748/TCP   21m
+```
+
+Now try to access the Prometheus UI by using NodePort shown above. In Prometheus UI if go to the `Status`-> `Rule`, You see `No rules defined`. Similarly, in Prometheus UI if go to `Alert` you can see `No alerting rules defined`.
+
+Let's configure `Record Rules` and `Alert Rules`.
+
+- Get the  [values.yaml](https://raw.githubusercontent.com/helm/charts/master/stable/prometheus/values.yaml) and modifiy as below.
+
+- In `values.yaml` find the section of `alertmanagerFiles` and update as below.
+
+```yaml
+.
+.
+.
+.
+## alertmanager ConfigMap entries
+##
+alertmanagerFiles:
+  alertmanager.yml:
+    global: {}
+    global:
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'sender@cloudyuga.guru'
+    templates:
+    - '/etc/alertmanager/template/*.tmpl'
+    route:
+      receiver: email
+    receivers:
+    - name: 'email'
+      email_configs:
+      - to: 'reciever@cloudyuga.guru'
+        from: "sender@cloudyuga.guru"
+        smarthost: smtp.gmail.com:587
+        auth_username: "sender@cloudyuga.guru"
+        auth_identity: "sender@cloudyuga.guru"
+        auth_password: "************"
+.
+.
+.
+.
+.
+.
+```
+
+Update SMTP Host, the Sender and reciever Email-ID. Update authentication for sender. 
+
+- Configure the `Alert Rule` in `values.yaml`, Find a `serverFiles:` section and update with your alert rules in `alerts` section. For example take a look at the following configuration
+
+```yaml
+.
+.
+.
+.
+## Prometheus server ConfigMap entries
+##
+serverFiles:
+
+  ## Alerts configuration
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+  alerts: 
+    groups:
+      - name: k8s_alerts
+        rules:
+        - alert: MoreThan30Deployments
+          expr: count(kube_deployment_created) >= 30
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Hey Admin!!!!! More Than 30 Deployments are running in cluster
+      - name: node_alerts
+        rules:
+        - alert: HighNodeCPU
+          expr: instance:node_cpu:avg_rate5m > 20
+          for: 10s
+          labels:
+            severity: warning
+          annotations:
+            summary: High Node CPU of {{ humanize $value}}% for 1 hour
+.
+.
+.
+.
+.
+```
+
+- Configure the `Record Rule` in `values.yaml`, Find a `serverFiles:` section and update with your record rules in `rules` section. For example it will look like the following configuration
+
+```yaml
+.
+.
+.
+serverFiles:
+
+  ## Alerts configuration
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+  alerts: 
+    groups:
+      - name: k8s_alerts
+        rules:
+        - alert: MoreThan30Deployments
+          expr: count(kube_deployment_created) >= 30
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Hey Admin!!!!! More Than 30 Deployments are running in cluster
+      - name: node_alerts
+        rules:
+        - alert: HighNodeCPU
+          expr: instance:node_cpu:avg_rate5m > 20
+          for: 10s
+          labels:
+            severity: warning
+          annotations:
+            summary: High Node CPU of {{ humanize $value}}% for 1 hour
+
+  rules: 
+    groups:
+      - name: kubernetes_rules
+        rules:
+        - record: apiserver_latency_seconds:quantile
+          expr: histogram_quantile(0.99, rate(apiserver_request_latencies_bucket[5m])) / 1e+06
+          labels:
+            quantile: "0.99"
+        - record: apiserver_latency_seconds:quantile
+          expr: histogram_quantile(0.9, rate(apiserver_request_latencies_bucket[5m])) / 1e+06
+          labels:
+            quantile: "0.9"
+        - record: apiserver_latency_seconds:quantile
+          expr: histogram_quantile(0.5, rate(apiserver_request_latencies_bucket[5m])) / 1e+06
+          labels:
+            quantile: "0.5"
+      - name: node_rules
+        rules:
+        - record: instance:node_cpu:avg_rate5m
+          expr: 100 - avg (irate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100
+        - record: instance:node_memory_usage:percentage
+          expr: (node_memory_MemTotal_bytes - (node_memory_MemFree + node_memory_Cached_bytes + node_memory_Buffers_bytes)) / node_memory_MemTotal_bytes * 100
+        - record: instance:root:node_filesystem_usage:percentage
+          expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"}* 100
+      - name: k8s_rules
+        rules:
+        - record: k8s:service:count
+          expr: count(kube_service_created)
+        - record: k8s:pod:count
+          expr: count(kube_pod_created)
+        - record: k8s:deploy:count
+          expr: count(kube_deployment_created)
+        - record: k8s:clusterrole:count
+          expr: etcd_object_counts{job="kubernetes-apiservers",resource="clusterroles.rbac.authorization.k8s.io"}
+        - record: k8s:serviceaccount:count
+          expr: etcd_object_counts{job="kubernetes-apiservers",resource="serviceaccounts"}	
+
+  prometheus.yml:
+    rule_files:
+      - /etc/config/rules
+      - /etc/config/alerts
+
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets:
+            - localhost:9090        
+```
+
+Once you update the `values.yaml` Lets now upgrade the Helm chart.
+
+- Upgrade the Helm release.
+
+```command
+helm upgrade prometheus --set server.service.type=NodePort stable/prometheus -f configs/values.yaml
+```
+
+Once you upgrade the Helm release. Access the Prometheus UI. In Prometheus UI if go to the `Status`-> `Rule`, You see new rules we have configure earlier are present there. Similarly, in Prometheus UI if you go to `Alert`, you can see that Alert rules are present there.
+
+
+### Install Grafana using helm
+
 
 - Install Grafana
 
 ```command
-helm install  --name grafana --set rbac.create='true' --set server.service.type='NodePort' --set server.ingress.enabled='true' --set server.service.nodePort=30500,server.ingress.hosts={grafana.cloudyuga.io} stable/grafana
+helm install  --name grafana \
+ --set service.type=NodePort  \
+ stable/grafana
+```
+
+
+
+## Clean UP.
+
+- Remove the Helm release and all its components.
+
+```command
+helm del --purge prometheus
+```
+- remove Grafana and its components.
+
+```command
+helm del ---purge  grafana
+
 ```

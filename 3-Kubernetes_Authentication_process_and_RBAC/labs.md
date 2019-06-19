@@ -81,6 +81,12 @@ kubectl certificate approve cloudyuga-csr
 certificatesigningrequest "cloudyuga-csr" approved
 ```
 
+### Lets download the certificate from the CSR.
+
+```command
+kubectl get csr cloudyuga-csr -o jsonpath='{.status.certificate}'     | base64 -d > cloudyuga.crt
+```
+
 ### Create new context for the user cloudyuga.
 
 - Set the credentials for the user.

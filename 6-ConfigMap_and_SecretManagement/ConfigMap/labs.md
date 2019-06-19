@@ -89,7 +89,7 @@ spec:
 
 ```
 
-So the data we have enclosed in the `customer1` ConfigMap is now used as Environment Varialbles for `rsvp-app` container.
+So the data we have enclosed in the `customer1` ConfigMap is now used as Environment Variables for `rsvp-app` container.
 
 - Deploy the Frontend application with above configuration file.
 
@@ -100,7 +100,7 @@ kubectl create -f configs/rsvpconfig.yaml
 deployment.extensions "rsvp" created
 ```
 
-- Lets create Backend for this Frontend and deploy it. Create follwoing like configuration yaml file.
+- Lets create Backend for this Frontend and deploy it. Create following like configuration yaml file.
 
 ```yaml
 
@@ -253,7 +253,7 @@ rsvp-db-1761629065-bq0x2   1/1       Running     0          20m
 
 Get logs of the pod `con-demo`.
 
-```commands
+```command
 kubectl logs con-demo
 ```
 ```

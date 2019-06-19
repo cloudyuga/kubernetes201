@@ -7,9 +7,8 @@ Typically, services and pods have IPs only routable by the cluster network. All 
 - Deploy the Nginx Ingress controller.
 
 ```command
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
-kubectl apply -f \
-https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
+kubectl apply -f configs/mandatory.yaml
+kubectl apply -f configs/cloud-generic.yaml
 ```
 
 ### Blue and Green application
@@ -135,13 +134,13 @@ kubectl get ing
 
 ```output
 NAME      HOSTS                        ADDRESS                                                                   PORTS     AGE
-test      blue.cy.guru,green.cy.guru   aa8134ffec30d11e881d002820176578-1755220804.us-west-2.elb.amazonaws.com   80        6m
+test      blue.cy.guru,green.cy.guru   157.230.73.72                                                              80        6m
 ```
  
 - Curl to the `blue.cy.guru` and see the output of curl.
 
 ```command
-curl -H "Host: blue.cy.guru" LoadBalancer-CNAME
+curl -H "Host: blue.cy.guru" 157.230.73.72
 ```
 ```output
 <!DOCTYPE html>
