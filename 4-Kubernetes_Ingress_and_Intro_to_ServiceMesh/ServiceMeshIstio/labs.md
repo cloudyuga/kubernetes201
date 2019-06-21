@@ -2,7 +2,7 @@
 
 # istio
 
-Istio isntallation.
+Istio installation.
 
 
 ```command
@@ -40,8 +40,10 @@ kubectl label namespace default istio-injection=enabled
 
 - Set the GATEWAY_URL.
 
+```
+export INGRESS_HOST=<node IP>
+```
 ```command
-export INGRESS_HOST=68.183.83.147
 
 export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 
