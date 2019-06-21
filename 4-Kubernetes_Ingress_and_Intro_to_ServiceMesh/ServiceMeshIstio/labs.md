@@ -485,7 +485,8 @@ spec:
 
 
 - Test the new routing configuration
-Refresh the page, reviews part of the page displays with no rating stars
+Refresh the page, reviews part of the page displays with no rating stars.
+
 
 ## Lab To Demonstrate Distributed Tracing :
 
@@ -522,7 +523,9 @@ for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; d
 
 **To get started, run this command to route all traffic to the v1 version of each microservice.**
 
-kubectl apply -f 
+```command
+kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+```
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -590,6 +593,10 @@ http://68.183.83.147:31380/productpage
 
 **Transfer 50% of the traffic from reviews:v1 to reviews:v3 with the following configuration:**
 
+```command
+kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+```
+
 ```yaml
 
 apiVersion: networking.istio.io/v1alpha3
@@ -622,6 +629,10 @@ spec:
 ***Refresh the /productpage in your browser and you now see red colored star ratings approximately 50% of the time. This is because the v3 version of reviews accesses the star ratings service, but the v1 version does not.***
 
 **Assuming you decide that the reviews:v3 microservice is stable, you can route 100% of the traffic to reviews:v3 by applying this virtual service:**
+
+```command
+kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+```
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
