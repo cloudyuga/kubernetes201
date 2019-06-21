@@ -508,152 +508,218 @@ kubectl delete pv pv0001
 StorageClasses are the foundation of dynamic provisioning, allowing cluster administrators to define abstractions for the underlying storage platform. Users simply refer to a StorageClass by name in the PersistentVolumeClaim (PVC) using the “storageClassName” parameter.
 
 
-- Get the list of `storageclass`.
+# Dynamic Volume Provisioning StorageClass
+
+## Slides
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTTtncKS5lSGb6kOChwz3n5MU9BplR8tCwOXdfhL-K3WU3TvRnGglrBM_ZAX67YBZpdnlwEgtPR5ZyC/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
+
+## Labs
+
+### List the StorageClasses
 
 ```command
 kubectl get storageclass
 ```
-```
-NAME                         PROVISIONER                 AGE
-do-block-storage (default)   dobs.csi.digitalocean.com   6h3m
-       
+```output
+No resources found.
 ```
 
-#### Deploy the RSVP application using PVC with `do-block storageclass`.(Currently default storage class is `do-block-storage`)
+If there is no StorageClass then, we would need to create one. If there is one,then we set it as **default StorageClass**. Please look at the instruction below to set up. 
 
-- Deploy RSVP frontend using following configuration file.
+### Install Ceph on nodes
+ 
+We would be orchestrating the storage using **[Rook](https://rook.io)**, which is the storage orchestrator for Kubernetes. To orchestrate the **block storage**, it uses **[Ceph](https://ceph.com)**. Ceph is a **Software Defined Storage**, which can combine and utilize the storage from different participant nodes and give us a storage pool. We can get the storage pool as Object, Block or file-system. 
 
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: rsvp
-spec:
-  template:
-    metadata:
-      labels:
-        app: rsvp
-    spec:
-      containers:
-      - name: rsvp-app
-        image: teamcloudyuga/rsvpapp
-        env:
-        - name: MONGODB_HOST
-          value: mongodb
-        ports:
-        - containerPort: 5000
-          name: web-port
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rsvp
-  labels:
-    app: rsvp
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    targetPort: web-port
-    protocol: TCP
-  selector:
-    app: rsvp
 
-```
-This file contains Frontend pod and the service for that pod.
+- We would need to install Ceph on all nodes, so you would have to login to each node seperately run following command :-
 
-- Create the deployment using the deployment.
+```preventcopy
+apt install ceph ceph-common
+``` 
+
+### Install Rook on Kubernetes
+
+**Rook** get installed as **Kuberenets Operator**. To install it we would be fist cloning its Git repository.
 
 ```command
-kubectl create -f configs/3-Dynamic-Volume-Provisioning/frontend.yaml
+git clone https://github.com/rook/rook.git
+```
+```command
+git checkout release-0.8
+```
+- Install the operator 
+
+```command
+kubectl apply  -f rook/cluster/examples/kubernetes/ceph/operator.yaml
+kubectl apply -f rook/cluster/examples/kubernetes/ceph/cluster.yaml
+```
+```output
+namespace/rook-ceph-system created
+customresourcedefinition.apiextensions.k8s.io/cephclusters.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/cephfilesystems.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/cephnfses.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/cephobjectstores.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/cephobjectstoreusers.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/cephblockpools.ceph.rook.io created
+customresourcedefinition.apiextensions.k8s.io/volumes.rook.io created
+clusterrole.rbac.authorization.k8s.io/rook-ceph-cluster-mgmt created
+role.rbac.authorization.k8s.io/rook-ceph-system created
+clusterrole.rbac.authorization.k8s.io/rook-ceph-global created
+clusterrole.rbac.authorization.k8s.io/rook-ceph-mgr-cluster created
+serviceaccount/rook-ceph-system created
+rolebinding.rbac.authorization.k8s.io/rook-ceph-system created
+clusterrolebinding.rbac.authorization.k8s.io/rook-ceph-global created
+deployment.apps/rook-ceph-operator created
+namespace/rook-ceph created
+serviceaccount/rook-ceph-osd created
+serviceaccount/rook-ceph-mgr created
+role.rbac.authorization.k8s.io/rook-ceph-osd created
+clusterrole.rbac.authorization.k8s.io/rook-ceph-mgr-system created
+role.rbac.authorization.k8s.io/rook-ceph-mgr created
+rolebinding.rbac.authorization.k8s.io/rook-ceph-cluster-mgmt created
+rolebinding.rbac.authorization.k8s.io/rook-ceph-osd created
+rolebinding.rbac.authorization.k8s.io/rook-ceph-mgr created
+rolebinding.rbac.authorization.k8s.io/rook-ceph-mgr-system created
+clusterrolebinding.rbac.authorization.k8s.io/rook-ceph-mgr-cluster created
+cephcluster.ceph.rook.io/rook-ceph created
 ```
 
-- Create the backend deployment, Persistent Volume claim, and Backend service from the following configuration.
+#### Checkout the Pods in **rook-ceph-system** and **rook-ceph**
+
+```command
+kubectl get pods -n rook-ceph-system
+```
+```output
+NAME                                 READY   STATUS    RESTARTS   AGE
+rook-ceph-agent-8zp5d                1/1     Running   0          73s
+rook-ceph-agent-xkxg4                1/1     Running   0          73s
+rook-ceph-operator-b996864dd-wrhmz   1/1     Running   0          92s
+rook-discover-6kkgt                  1/1     Running   0          73s
+rook-discover-rf9gg                  1/1     Running   0          73s
+``` 
+
+```command
+kubectl get pods  -n rook-ceph
+```
+```output
+NAME                               READY   STATUS    RESTARTS   AGE
+rook-ceph-mgr-a-7469566bdf-fcgqs   1/1     Running   0          24s
+rook-ceph-mon-a-5b7f5db8d8-66czm   1/1     Running   0          63s
+rook-ceph-mon-b-69bd898747-zmnf6   1/1     Running   0          42s
+rook-ceph-mon-c-6b5698894d-xfnr8   1/1     Running   0          33s
+``` 
+
+### Create the **rook-ceph-block StorageClass**
+
+Once we the Rook cluster configured using earlier steps, we'll create the **rook-ceph-block StorageClass**, which would help to dynamically provision the storage.
+
+
+```command
+kubectl create -f rook/cluster/examples/kubernetes/ceph/storageclass.yaml
+```
+```output
+cephblockpool.ceph.rook.io/replicapool created
+storageclass.storage.k8s.io/rook-ceph-block created
+``` 
+
+#### List the StorageClass
+```command
+kubectl get storageclass
+```
+```outout
+NAME              PROVISIONER          AGE
+rook-ceph-block   ceph.rook.io/block   33s
+```
+
+### Configuring the Backend application to use **rook-ceph-block StorageClass**  
+
+In the `configs/1-backend.yaml` file, make sure that we the **rook-ceph-block** as **StorageClass**
 
 ```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: rsvp-db
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        appdb: rsvpdb
-    spec:
-      volumes:
-        - name: voldb
-          persistentVolumeClaim:
-           claimName: myclaim
-      containers:
-      - name: rsvpd-db
-        image: mongo:3.3
-        volumeMounts:
-        - name: voldb
-          mountPath: /data/db
-        env:
-        - name: MONGODB_DATABASE
-          value: rsvpdata
-        ports:
-        - containerPort: 27017
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: myclaim
-  labels:
-    appdb: rsvpdb
+  name: dynamic-claim
 spec:
-  storageClassName: do-block-storage
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
+  storageClassName: rook-ceph-block
   resources:
     requests:
       storage: 1Gi
---- 
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongodb
-  labels:
-    app: rsvpdb
-spec:
-  ports:
-  - port: 27017
-    protocol: TCP
-  selector:
-    appdb: rsvpdb
 ```
 
-
-- Create the backend deployment.
+### Deploy the Backend and Frontend application
 
 ```command
-kubectl create -f configs/3-Dynamic-Volume-Provisioning/backend.yaml
+kubectl apply -f configs/1-backend.yaml
+kubectl apply -f configs/2-frontend.yaml
 ```
 
-- Check the PVC.
+### List the **PVC** and **PV** 
 
 ```command
 kubectl get pvc
 ```
-```
-NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS       AGE
-myclaim   Bound    pvc-a20c34ac-9291-11e9-be70-1e9c811fb098   1Gi        RWO            do-block-storage   10s
+```output
+NAME            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS      AGE
+dynamic-claim   Bound    pvc-479d54e0-4254-11e9-9572-923c581de2b9   1Gi        RWO            rook-ceph-block   76s
 ```
 
-Try to access the application at Nodeport. Make some entries in that RSVP application. Delete the backend and  deploy backend again. You will see our older entries are still present in that page.
-
-
-```
-## Delete Services, Deployments and PVC.
 
 ```command
-kubectl delete svc mongodb rsvp 
-kubectl delete deploy rsvp rsvp-db
-kubectl delete pvc myclaim
+kubectl get pv
 ```
+```output
+NAME                               CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                   STORAGECLASS      REASON   AGE
+pvc-479d54e0-4254-11e9-9572-923c581de2b9   1Gi        RWO            Delete    Bound    default/dynamic-claim   rook-ceph-block            60s
+```
+
+### Set the **rook-ceph-block** as default  **StorageClass**
+We can set **rook-ceph-block** as default  **StorageClass**, after which all of the volumes 
+would be provisioned using this **rook** only; unless someone mentions a different StorageClass which 
+creating the PVC.  
+
+```command
+kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+```output
+storageclass.storage.k8s.io/rook-ceph-block patched
+```
+
+List the StorageClass
+
+```command
+kubectl get storageclass
+```
+```output
+NAME                        PROVISIONER          AGE
+rook-ceph-block (default)   ceph.rook.io/block   42m
+```
+
+### Clean up
+
+#### Delete the application
+
+```command
+kubectl delete -f configs/
+```
+
+#### Delete the Rook Operator
+
+```command
+kubectl delete -f rook/cluster/examples/kubernetes/ceph/cluster.yaml
+```
+
+```command
+kubectl delete -f rook/cluster/examples/kubernetes/ceph/operator.yaml
+```
+
+
+
+
+
+
+
+
