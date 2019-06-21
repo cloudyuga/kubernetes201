@@ -276,6 +276,7 @@ spec:
 ```command
 kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 ```
+
 - Create an ingress gateway for this application:
 
 ```yaml
