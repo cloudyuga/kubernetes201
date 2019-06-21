@@ -249,7 +249,7 @@ path      cy.myweb.com   165.227.120.162   80        25m
 curl cy.myweb.com/
 ```
 
-```output
+```
 <!DOCTYPE html>
 <html>
 <body bgcolor="Blue">
@@ -266,10 +266,12 @@ curl cy.myweb.com/
 You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
 
 Curl to the `cy.myweb.com/green` and see the output of curl.
+
 ```command
 curl cy.myweb.com/green
 ```
-```output
+
+```
 <!DOCTYPE html>
 <html>
 <body bgcolor="Green">
@@ -281,8 +283,8 @@ curl cy.myweb.com/green
 
 </body>
 </html>
-
 ```
+
 You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
