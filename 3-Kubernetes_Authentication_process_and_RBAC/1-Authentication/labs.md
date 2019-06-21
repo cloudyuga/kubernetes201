@@ -1,6 +1,7 @@
 # User Authentication 
 
 ## Slides
+
 <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQ7Vx9ZNTZxM-_K1HXhnpR78CEwsBSltMObYNjaRdQ1N56XZzaN7G4OPHAi02ZM65f9cMCEd3eQLg51/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
 
@@ -120,4 +121,4 @@ kubectl --context=cloudyuga-context get pods
 Error from server (Forbidden): User "cloudyuga" cannot list pods in the namespace "cloudyuga". (get pods)
 ```
 
-You should get an access denied error when using the kubectl CLI with this configuration file. Because we have not described any roles or clusterrole for this user.
+You should get an access denied error when using the kubectl CLI with this configuration file because we have not described any roles or clusterrole for this user.
