@@ -1,11 +1,11 @@
-# Kubernetes Setup In Digital Ocean
+# Kubernetes Setup In UpCloud
 
 # Cluster creation
 
 ## Prerequisites.
 
 
-- You Must have a DigitalOcean account and `Personal Access Token` must be generated on [DigitalOcean](https://www.digitalocean.com/docs/api/create-personal-access-token/).
+- You Must have an UpCloud account or create a new one.
 
 
 ### Create SSH Keys.
@@ -39,96 +39,34 @@ The key's randomart image is:
 
 ```
 
-- You must link above created SSH key to [DigitalOcean] For that follow these [guidelines](https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/create-with-openssh/)
+- You must link above created SSH key to [UpCloud](https://hub.upcloud.com/account/ssh)
 
 - We are asuming your public keys and private keys are located at `~/.ssh/id_rsa.pub` and `~/.ssh/id_rsa`
 
 
-## Create VMs for creating K8s on DigitalOcean.
+## Create VMs on UpCloud.
 
-- Start `tmux`. 
-
-```command
-tmux
-```
-
-- Create a new directory for Terraform backup.
-
-```command
-mkdir ~/terra-labs
-```
-
-- Copy all files from `0-Setup` to `~/terra-labs` directory.
-
-```command
-cp -r * ~/terra-labs/.
-```
-
-- Get into Directory.
-
-```command
-cd ~/terra-labs
-```
-
-- Get a Fingerprint of Your SSH public key.
-
-
-```command
-ssh-keygen -lf ~/.ssh/id_rsa.pub
-```
-```
-2048 00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff /Users/username/.ssh/id_rsa.pub (RSA)
-```
-
-
-- Export a Fingerprint shown in above output.
-
-```command
-export FINGERPRINT=
-```
-
-- Export your DO Personal Access Token.
-
-
-```command
-export TOKEN=
-```
-
-
-- Export a Terraform Worskspace Name. Provide Your name in small letter.
-
-
-```command
-export WORKSPACE=
-```
-
-- Now take a look at the directory.
-
-
-```command
-ls
-```
-```
-labs.md   creation.sh  destroy.sh  key.tf   nodes.tf  outputs.tf  provider.tf
+- Login to your [UpCloud](https://hub.upcloud.com/deploy) account and deploy two servers.
 
 ```
-
-
-- Run the script.
-
-```command
-./creation.sh
-```
-
-- Reload shell.
-
-
-```command
-source ~/.bashrc
+details:
+ Name:
+ Server1:  Master
+ Server2:  Worker
+ Template: Ubuntu Server 18.04 LTS (Bionic Beaver
+ Core     : 2
+ RAM       : 4
 ```
 
 Once creation of the VM completes, you will get the IP address of VM. SSH into VM to perform further labs.
 
+
+
+- Start `tmux` on container terminal.
+
+```command
+tmux
+```
 
 -  SSH to Master Droplet
 
@@ -144,18 +82,22 @@ ssh root@$WORKER_PUBLIC_IP
 
 ### Creating a K8s Cluster Using kubeadm.
 
-#### Install `kubelet` and `kubeadm` on all the instances i.e. Manager, Node1 and Node2 using following commands.
+#### Install `kubelet` and `kubeadm` on both nodes using following commands.
 
 ```command
 apt-get update && apt-get install -y apt-transport-https
+```
+```command
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
+```
+```command
 apt-get update
 apt-get install -y kubelet kubeadm kubectl
 ```
-#### Install `Docker` on all the instances i.e. Manager, Node1 and Node2 using following commands.
+#### Install `Docker` on both nodes using following commands.
 
 ```command
 sudo apt-get update
@@ -164,7 +106,7 @@ sudo apt-get install docker.io
 #### Initializing `Master` instance by using following command. (execute only on Master node).
 
 ```command
-kubeadm init --pod-network-cidr=192.168.0.0/16
+kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 Please note down the `kubeadm join` command that will be shown as output of `kubeadm init` command.
 
@@ -175,10 +117,11 @@ mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
-#### Deploy the `Calico pod network` using following command.
+#### Deploy the `Calico pod network` on master node using following command.
 
 ```command
-kubectl apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml
+
 ```
 ####  Join the worker node to cluster. In the terminal of both `Node1` and `Node2` execute the command that was output by `kubeadm init` command.
 
@@ -203,16 +146,3 @@ kubectl cluster-info
 kubectl get componentstatuses
 ```
 
-### To Delete the Cluster. 
-
-- Get into Directory.
-
-```command
-cd ~/terra-labs
-```
-
-- Run script
-
-```command
-./destroy.sh
-```

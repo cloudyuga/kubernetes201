@@ -1,13 +1,14 @@
-## Ingress Controller
+# Ingress
+Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an edge router is either dropped or forwarded elsewhere. `An Ingress is a collection of rules that allow inbound connections to reach the cluster services.` It can be configured to give services externally-reachable URLs, load balance traffic, terminate SSL, offer name based virtual hosting, and more. Users request ingress by POSTing the Ingress resource to the API server. In order for the Ingress resource to work, the cluster must have an Ingress controller running. This is unlike other types of controllers, which typically run as part of the kube-controller-manager binary, and which are typically started automatically as part of cluster creation. Choose the ingress controller implementation that best fits your cluster, or implement a new ingress controller
 
-Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an edge router is either dropped or forwarded elsewhere. An Ingress is a collection of rules that allow inbound connections to reach the cluster services. It can be configured to give services externally-reachable URLs, load balance traffic, terminate SSL, offer name based virtual hosting, and more. Users request ingress by POSTing the Ingress resource to the API server. In order for the Ingress resource to work, the cluster must have an Ingress controller running. This is unlike other types of controllers, which typically run as part of the kube-controller-manager binary, and which are typically started automatically as part of cluster creation. Choose the ingress controller implementation that best fits your cluster, or implement a new ingress controller
 
 ### Carry out following deployments first.
 
 #### Create the Namespace.
 
 ```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml \
+
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/namespace.yaml \
     | kubectl apply -f -
 
 ```
@@ -15,7 +16,7 @@ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/na
 #### Create default Backend for the Nginx ingress controller.
 
 ```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml \
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/default-backend.yaml \
     | kubectl apply -f -
 
 ```
@@ -23,32 +24,29 @@ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/de
 #### Create ConfigMap for the Nginx ingress controller.
 
 ```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml \
-    | kubectl apply -f -
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/configmap.yaml \
+    | kubectl apply -f -    
 ```
-```command    
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml \
+```command
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/tcp-services-configmap.yaml \
     | kubectl apply -f -
 ```
 ```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml \
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/udp-services-configmap.yaml \
     | kubectl apply -f -
 ```
 
 #### Set the RBAC rules.
-
-```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
+```
+$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
     | kubectl apply -f -
 ```
 
 Create the `Nginx ingress controller` configuration file as shown below.
-
 ```command
 vi configs/ingress-controller.yaml
 ```
 ```yaml
-
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -96,7 +94,6 @@ spec:
 ```
 
 Deploy the Nginx Ingress controller.
-
 ```command
 kubectl create -f configs/ingress-controller.yaml
 ```
@@ -105,10 +102,9 @@ kubectl create -f configs/ingress-controller.yaml
 Create and deploy the Blue application from following configuration file.
 
 ```command
-vim configs/blue.yaml
+ vim configs/blue.yaml
 ```
 ```yaml
-
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -143,18 +139,17 @@ spec:
 
 
 ```
-
-#### Deploy the application.
+```command
+Deploy the application
 
 ```command
-kubectl create -f configs/blue.yaml
+ kubectl create -f blue.yaml
 ```
-####Create and deploy the Green application from following configuration file.
+Create and deploy the Green application from following configuration file.
 
 ```command
-vim configs/green.yaml
+vim green.yaml
 ```
-
 ```yaml
 ---
 apiVersion: extensions/v1beta1
@@ -190,16 +185,16 @@ spec:
 
 ```
 
-#### Deploy the Green application.
+Deploy the Green application.
 
 ```command
-kubectl create -f configs/green.yaml
+kubectl create -f green.yaml
 ```
 
-#####Create a Path based ingress object.
+Create a Path based ingress object.
 
 ```command
-vim configs/ingress_path.yaml
+vim ingress_path.yaml
 ```
 
 ```yaml
@@ -226,29 +221,29 @@ spec:
 
 ```
 
-### Deploy this ingress object.
+Deploy this ingress object.
 
 ```command
 kubectl create -f configs/ingress_path.yaml
 ```
 
-#### Get the status of ingress.
+Get the status of ingress.
 
 ```command
 kubectl get ing
 ```
-```output
+```
 NAME      HOSTS          ADDRESS           PORTS     AGE
 path      cy.myweb.com   165.227.120.162   80        25m
 ```
 
-- Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
+ Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
  
  Curl to the `cy.myweb.com/blue` and see the output of curl.
-
 ```command
-curl cy.myweb.com/blue
+curl cy.myweb.com/
 ```
+
 ```output
 <!DOCTYPE html>
 <html>
@@ -263,15 +258,13 @@ curl cy.myweb.com/blue
 </html>
 
 ```
-- You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
+You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
 
-- Curl to the `cy.myweb.com/green` and see the output of curl.
-
+Curl to the `cy.myweb.com/green` and see the output of curl.
 ```command
 curl cy.myweb.com/green
 ```
 ```output
-
 <!DOCTYPE html>
 <html>
 <body bgcolor="Green">
@@ -285,10 +278,10 @@ curl cy.myweb.com/green
 </html>
 
 ```
-- You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
+You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
-### Delete Services, Deployments and Ingress.
+## Delete Services, Deployments and Ingress.
 
 ```command
 kubectl delete deploy blue green

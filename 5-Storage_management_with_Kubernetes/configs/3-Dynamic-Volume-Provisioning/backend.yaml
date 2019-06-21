@@ -33,7 +33,7 @@ metadata:
   labels:
     appdb: rsvpdb
 spec:
-  storageClassName: rook-block
+  storageClassName: rook-ceph-block
   accessModes:
   - ReadWriteOnce
   resources:
