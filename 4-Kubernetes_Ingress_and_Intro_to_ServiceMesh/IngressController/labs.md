@@ -285,7 +285,7 @@ curl cy.myweb.com/green
 </html>
 ```
 
-You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
+- You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
 ## Delete Services, Deployments and Ingress.
