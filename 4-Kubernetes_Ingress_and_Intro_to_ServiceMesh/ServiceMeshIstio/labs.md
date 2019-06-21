@@ -54,9 +54,7 @@ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
 - Deploy Bookinfo application:
 
-```
-https://istio.io/docs/examples/bookinfo/
-```
+
 ```yaml
 # Copyright 2017 Istio Authors
 #
