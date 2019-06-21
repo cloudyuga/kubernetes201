@@ -546,6 +546,9 @@ apt install ceph ceph-common
 git clone https://github.com/rook/rook.git
 ```
 ```command
+cd rook
+```
+```command
 git checkout release-0.8
 ```
 - Install the operator 
