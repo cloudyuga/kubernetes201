@@ -1,20 +1,17 @@
-apiVersion: apps/v1
+---
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: green
+  name: blue
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: green
   template:
     metadata:
       labels:
-        app: green
+        app: blue
     spec:
       containers:
-      - name: green
-        image: teamcloudyuga/green
+      - name: blue
+        image: teamcloudyuga/blue
         ports:
         - containerPort: 80
 
@@ -22,12 +19,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: green
+  name: blue
   labels:
-    app: green
+    app: blue
 spec:
+  type: NodePort
   ports:
   - port: 80
     protocol: TCP
   selector:
-    app: green
+    app: blue

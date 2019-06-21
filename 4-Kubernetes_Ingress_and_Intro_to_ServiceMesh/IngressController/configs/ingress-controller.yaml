@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: nginx-ingress-controller
@@ -41,4 +41,3 @@ spec:
             containerPort: 80
           - name: https
             containerPort: 443
-

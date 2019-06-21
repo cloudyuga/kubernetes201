@@ -1,18 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: virtual
+  name: path
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: blue.cy.guru
+  - host: cy.myweb.com
     http:
       paths:
-      - backend:
+      - path: /blue
+        backend:
           serviceName: blue
           servicePort: 80
-  - host: green.cy.guru
-    http:
-      paths:
-      - backend:
+      - path: /green
+        backend:
           serviceName: green
           servicePort: 80

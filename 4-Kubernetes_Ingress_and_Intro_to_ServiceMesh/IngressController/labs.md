@@ -1,30 +1,112 @@
-# Ingress
-Typically, services and pods have IPs only routable by the cluster network. All traffic that ends up at an edge router is either dropped or forwarded elsewhere. `An Ingress is a collection of rules that allow inbound connections to reach the cluster services.` It can be configured to give services externally-reachable URLs, load balance traffic, terminate SSL, offer name based virtual hosting, and more. Users request ingress by POSTing the Ingress resource to the API server. In order for the Ingress resource to work, the cluster must have an Ingress controller running. This is unlike other types of controllers, which typically run as part of the kube-controller-manager binary, and which are typically started automatically as part of cluster creation. Choose the ingress controller implementation that best fits your cluster, or implement a new ingress controller
+### Carry out following deployments first.
 
-
-## Setting up Ingress Controller and it's component.
-
-- Deploy the Nginx Ingress controller.
+#### Create the Namespace.
 
 ```command
-kubectl apply -f configs/mandatory.yaml
-kubectl apply -f configs/cloud-generic.yaml
+
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/namespace.yaml \
+    | kubectl apply -f -
+
 ```
 
-### Blue and Green application
+#### Create default Backend for the Nginx ingress controller.
 
-Create and deploy the Blue application from following configuration file.
+```command
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/default-backend.yaml \
+    | kubectl apply -f -
 
+```
+
+#### Create ConfigMap for the Nginx ingress controller.
+
+```command
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/configmap.yaml \
+    | kubectl apply -f -    
+```
+```command
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/tcp-services-configmap.yaml \
+    | kubectl apply -f -
+```
+```command
+ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/udp-services-configmap.yaml \
+    | kubectl apply -f -
+```
+
+#### Set the RBAC rules.
+```
+$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
+    | kubectl apply -f -
+```
+
+Create the `Nginx ingress controller` configuration file as shown below.
+```command
+vi configs/ingress-controller.yaml
+```
 ```yaml
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: blue
+  name: nginx-ingress-controller
+  namespace: ingress-nginx 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: blue
+      app: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app: ingress-nginx
+      annotations:
+        prometheus.io/port: '10254'
+        prometheus.io/scrape: 'true'
+    spec:
+      serviceAccountName: nginx-ingress-serviceaccount
+      hostNetwork: true
+      containers:
+        - name: nginx-ingress-controller
+          image: gcr.io/google_containers/nginx-ingress-controller:0.9.0-beta.15
+          args:
+            - /nginx-ingress-controller
+            - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
+            - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+            - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+
+```
+
+Deploy the Nginx Ingress controller.
+```command
+kubectl create -f configs/ingress-controller.yaml
+```
+### Blue and Green application
+
+Create and deploy the Blue application from following configuration file.
+
+```command
+ vim configs/blue.yaml
+```
+```yaml
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: blue
+spec:
   template:
     metadata:
       labels:
@@ -35,6 +117,7 @@ spec:
         image: teamcloudyuga/blue
         ports:
         - containerPort: 80
+
 ---
 apiVersion: v1
 kind: Service
@@ -43,31 +126,33 @@ metadata:
   labels:
     app: blue
 spec:
+  type: NodePort
   ports:
   - port: 80
     protocol: TCP
   selector:
     app: blue
-```
 
-- Deploy the application
+
+```
+```command
+Deploy the application
 
 ```command
-kubectl apply -f configs/2-blue.yaml
+ kubectl create -f blue.yaml
 ```
+Create and deploy the Green application from following configuration file.
 
-- Create and deploy the Green application from following configuration file.
-
+```command
+vim green.yaml
+```
 ```yaml
-apiVersion: apps/v1
+---
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: green
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: green
   template:
     metadata:
       labels:
@@ -78,6 +163,7 @@ spec:
         image: teamcloudyuga/green
         ports:
         - containerPort: 80
+
 ---
 apiVersion: v1
 kind: Service
@@ -86,100 +172,111 @@ metadata:
   labels:
     app: green
 spec:
+  type: NodePort
   ports:
   - port: 80
     protocol: TCP
   selector:
     app: green
+
 ```
 
-- Deploy the Green application.
+Deploy the Green application.
+
 ```command
-kubectl apply -f configs/3-green.yaml
+kubectl create -f green.yaml
 ```
 
-- Create a Vhost based ingress object.
+Create a Path based ingress object.
+
+```command
+vim ingress_path.yaml
+```
 
 ```yaml
+
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: test
+  name: path
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: blue.cy.guru
+  - host: cy.myweb.com
     http:
       paths:
-      - backend:
+      - path: /blue
+        backend:
           serviceName: blue
           servicePort: 80
-  - host: green.cy.guru
-    http:
-      paths:
-      - backend:
+      - path: /green
+        backend:
           serviceName: green
           servicePort: 80
+
 ```
 
-- Deploy this ingress object.
+Deploy this ingress object.
+
 ```command
-kubectl apply -f configs/4-ingress_vhost.yaml
+kubectl create -f configs/ingress_path.yaml
 ```
 
-- Get the status of ingress.
+Get the status of ingress.
 
 ```command
 kubectl get ing
 ```
-
-```output
-NAME      HOSTS                        ADDRESS                                                                   PORTS     AGE
-test      blue.cy.guru,green.cy.guru   157.230.73.72                                                              80        6m
 ```
+NAME      HOSTS          ADDRESS           PORTS     AGE
+path      cy.myweb.com   165.227.120.162   80        25m
+```
+
+ Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
  
-- Curl to the `blue.cy.guru` and see the output of curl.
-
+ Curl to the `cy.myweb.com/blue` and see the output of curl.
 ```command
-curl -H "Host: blue.cy.guru" 157.230.73.72
+curl cy.myweb.com/blue
 ```
-```output
 <!DOCTYPE html>
 <html>
 <body bgcolor="Blue">
 <h1> This is Blue Application <h1>
 <h1>Hello From Cloudyuga!</h1>
 <p><a href="https://cloudyuga.guru/"> Visit cloudyuga.guru!</a></p>
-.
-.
-.
-.
+
+
+
 </body>
 </html>
-```
-You can aslo check the in the browser `green.cy.guru` will show you nginx running.
 
-- Curl to the `green.cy.guru` and see the output of curl.
+```
+You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
+
+Curl to the `cy.myweb.com/green` and see the output of curl.
 ```command
-curl -H "Host: green.cy.guru" LoadBalancer-CNAME
+curl cy.myweb.com/green
 ```
-
-```output
+```
 <!DOCTYPE html>
 <html>
 <body bgcolor="Green">
 <h1> This is Green Application <h1>
 <h1>Hello From Cloudyuga!</h1>
 <p><a href="https://cloudyuga.guru/"> Visit cloudyuga.guru!</a></p>
-.
-.
-.
+
+
+
 </body>
 </html>
+
 ```
-You can also see the application in browser by using hostname `green.cy.guru` and `blue.cy.guru`
+You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
 ## Delete Services, Deployments and Ingress.
+
 ```command
 kubectl delete deploy blue green
 kubectl delete svc blue green
@@ -187,76 +284,4 @@ kubectl delete ing path
 ```
 
 
-### ALB and ELB ingress controller.
 
-ELB loadbalancer is level 4 base loadbalancer, it takes TCP/HTTP request and forward the request to all the instances attached to it, on least used server basis.
-
-Alb is for application loadbalancer. It basically suited for micro-service based architecture. It is level 7 based loadbalancer, it supports various various to route traffic to instance, based on host-header or path-based routing or host based.
-
-
-Advantages of ALB over ELB
-
-* Support for path-based routing like different route `cloudyuga.guru/foo` and `cloudyuga.guru/bar`. We can configure rules that forward requests based on the URL in the request. 
-
-* It enables us to structure our application as smaller services, and route requests to the correct service based on the content of the URL.
-
-* Along with path-base routing like we can do host-based routing like `foo.cloudyuga.guru` and `bar.cloudyuga.guru`. We can configure rules that forward requests based on the host field in the HTTP header. 
-
-* It enables us to route requests to multiple domains using a single load balancer.
-
-* It supports for routing requests to multiple applications on a single EC2 instance. We can register each instance or IP address with the same target group using multiple ports.
-
-* Support for monitoring the health of each service independently, as health checks are defined at the target group level and many CloudWatch metrics are reported at the target group level. 
-
-* Attaching a target group to an Auto Scaling group enables us to scale each service dynamically based on demand.
-
-
-
-![ALB](https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/master/docs/imgs/controller-design.png)
-
-#### Ingress Creation
-
-This section describes each step (circle) above. This example demonstrates satisfying 1 ingress resource.
-
-[1]: The controller watches for ingress events from the API server. When it finds ingress resources that satisfy its requirements, it begins the creation of AWS resources.
-
-[2]: An ALB (ELBv2) is created in AWS for the new ingress resource. This ALB can be internet-facing or internal. You can also specify the subnets it's created in using annotations.
-
-[3]: Target Groups are created in AWS for each unique Kubernetes service described in the ingress resource.
-
-[4]: Listeners are created for every port detailed in your ingress resource annotations. When no port is specified, sensible defaults (80 or 443) are used. Certificates may also be attached via annotations.
-
-[5]: Rules are created for each path specified in your ingress resource. This ensures traffic to a specific path is routed to the correct Kubernetes Service.
-
-
-#### Example for ingress resource.
-
-```yaml
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: echoserver
-  namespace: echoserver
-  annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
-spec:
-  rules:
-    - host: echoserver.cloudyuga.guru
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: echoserver
-	      servicePort: 80
-```
-
-Here `echoserver.cloudyuga.guru` will be routed to k8s service named `echoserver`. We are using various annotation to configure the alb created by ingress rules.
-
-
-Reference:
-
-* https://github.com/kubernetes-sigs/aws-alb-ingress-controller
-* https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html
