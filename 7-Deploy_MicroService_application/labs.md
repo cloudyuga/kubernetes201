@@ -1,5 +1,5 @@
 ## Monolith Application Architecture:
-![Monolith Application](https://raw.githubusercontent.com/praveenvp07/kubernetes201/master/7-Deploy_MicroService_application/Monolith.jpeg)
+![Monolith Application](https://raw.githubusercontent.com/cloudyuga/kubernetes201/master/7-Deploy_MicroService_application/Monolith.jpeg)
 
 ### Steps to run the application.
 
@@ -55,7 +55,7 @@ userdb-7d8d9b77b5-4v26b       1/1       Running   0          2m
 We created the above microservices from monolith application.
 
 ## Microservices Application architecture.
-![Microservices](https://raw.githubusercontent.com/praveenvp07/kubernetes201/master/7-Deploy_MicroService_application/Catalogue.jpeg)
+![Microservices](https://raw.githubusercontent.com/cloudyuga/kubernetes201/master/7Deploy_MicroService_application/Catalogue.jpeg)
 
 
 ### Access the application.
