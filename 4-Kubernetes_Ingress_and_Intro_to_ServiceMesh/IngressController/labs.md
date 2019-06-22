@@ -247,6 +247,7 @@ path      cy.myweb.com   165.227.120.162   80        25m
  Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
  
  Curl to the `cy.myweb.com/blue` and see the output of curl.
+ 
 ```command
 curl cy.myweb.com/
 ```
