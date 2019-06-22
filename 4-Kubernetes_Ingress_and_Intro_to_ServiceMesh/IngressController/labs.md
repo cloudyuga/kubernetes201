@@ -37,15 +37,18 @@ Typically, services and pods have IPs only routable by the cluster network. All 
 ```
 
 #### Set the RBAC rules.
-```
-$ curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
+
+```command
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
     | kubectl apply -f -
 ```
 
-Create the `Nginx ingress controller` configuration file as shown below.
+Create the `Nginx ingress controller` configuration file as shown below
+
 ```command
 vi configs/ingress-controller.yaml
 ```
+
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -94,9 +97,11 @@ spec:
 ```
 
 Deploy the Nginx Ingress controller.
+
 ```command
 kubectl create -f configs/ingress-controller.yaml
 ```
+
 ### Blue and Green application
 
 Create and deploy the Blue application from following configuration file.
@@ -244,7 +249,7 @@ path      cy.myweb.com   165.227.120.162   80        25m
 curl cy.myweb.com/
 ```
 
-```output
+```
 <!DOCTYPE html>
 <html>
 <body bgcolor="Blue">
@@ -261,10 +266,12 @@ curl cy.myweb.com/
 You can aslo check the in the browser `cy.myweb.com/web` will show you nginx running.
 
 Curl to the `cy.myweb.com/green` and see the output of curl.
+
 ```command
 curl cy.myweb.com/green
 ```
-```output
+
+```
 <!DOCTYPE html>
 <html>
 <body bgcolor="Green">
@@ -276,9 +283,9 @@ curl cy.myweb.com/green
 
 </body>
 </html>
-
 ```
-You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
+
+- You can also see the application in browser by using hostname `cy.myweb.com/green` and `cy.myweb.com/blue`
 
 
 ## Delete Services, Deployments and Ingress.

@@ -2,10 +2,10 @@
 
 # istio
 
-Istio isntallation.
+Istio installation.
 
 
-```command
+```
 curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.0.5 sh -
 cd istio-1.*
 cp bin/istioctl /usr/bin/.
@@ -40,8 +40,10 @@ kubectl label namespace default istio-injection=enabled
 
 - Set the GATEWAY_URL.
 
+```
+export INGRESS_HOST=<node IP>
+```
 ```command
-export INGRESS_HOST=68.183.83.147
 
 export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 
@@ -52,9 +54,7 @@ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
 - Deploy Bookinfo application:
 
-```
-https://istio.io/docs/examples/bookinfo/
-```
+
 ```yaml
 # Copyright 2017 Istio Authors
 #
@@ -276,6 +276,7 @@ spec:
 ```command
 kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 ```
+
 - Create an ingress gateway for this application:
 
 ```yaml
