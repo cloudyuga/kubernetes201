@@ -5,7 +5,7 @@
 Istio installation.
 
 
-```
+```command
 curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.0.5 sh -
 cd istio-1.*
 cp bin/istioctl /usr/bin/.
