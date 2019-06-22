@@ -109,6 +109,7 @@ Create and deploy the Blue application from following configuration file.
 ```command
  vim configs/blue.yaml
 ```
+
 ```yaml
 ---
 apiVersion: extensions/v1beta1
@@ -142,10 +143,11 @@ spec:
   selector:
     app: blue
 
-
 ```
+
 ```command
 Deploy the application
+```
 
 ```command
  kubectl create -f blue.yaml
