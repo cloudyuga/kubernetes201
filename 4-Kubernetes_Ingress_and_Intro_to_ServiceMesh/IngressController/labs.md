@@ -39,7 +39,7 @@ Typically, services and pods have IPs only routable by the cluster network. All 
 #### Set the RBAC rules.
 
 ```command
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
+curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.10.1/deploy/rbac.yaml \
     | kubectl apply -f -
 ```
 
