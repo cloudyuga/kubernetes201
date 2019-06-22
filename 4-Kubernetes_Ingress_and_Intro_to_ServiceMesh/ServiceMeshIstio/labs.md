@@ -8,7 +8,7 @@ Istio installation.
 ```command
 curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.0.5 sh -
 cd istio-1.*
-cp bin/istioctl /usr/bin/.
+sudo cp bin/istioctl /usr/bin/.
 ```
 
 - Install required CRD.
@@ -23,7 +23,7 @@ kubectl apply -f install/kubernetes/helm/istio/templates/crds.yaml
 
 ```command
 kubectl apply -f install/kubernetes/istio-demo.yaml
-
+```
 - Confirm the Pods running.
 
 ```command
@@ -274,7 +274,7 @@ spec:
 ```
 
 ```command
-kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+kubectl apply -f configs/bookinfo.yaml
 ```
 
 - Create an ingress gateway for this application:
@@ -325,10 +325,11 @@ spec:
 
 
 ```command
-kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+kubectl apply -f configs/bookinfo-gateway.yaml
 ```
 
 To confirm that the Bookinfo application is accessible from outside the cluster, run the following curl command:
+
 ```command
 curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
 ```
@@ -338,13 +339,13 @@ curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
 To access through browser:
 
 ```command
-http://68.183.83.147:31380/productpage 
+http://<nodeIP>:31380/productpage 
 ```
 
 ### Apply default destination rules.
 
 ```command
-kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+kubectl apply -f configs/destination-rule-all.yaml
 ```
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -416,7 +417,7 @@ spec:
 
 ### Request Routing:
 
-https://istio.io/docs/tasks/traffic-management/request-routing/
+
 
 - Apply a virtual service.
 
@@ -480,7 +481,7 @@ spec:
 ```
 
 ```command
- kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+ kubectl apply -f configs/virtual-service-all-v1.yaml
  ```
 
 
@@ -522,10 +523,10 @@ for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; d
 ### Traffic Shifting
 
 
-**To get started, run this command to route all traffic to the v1 version of each microservice.**
+**To get started, run this command to route all traffic to the v1 version of each microservice (same as that of request routing lab)**
 
 ```command
-kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+kubectl apply -f configs/virtual-service-all-v1.yaml
 ```
 
 ```yaml
@@ -595,7 +596,7 @@ http://68.183.83.147:31380/productpage
 **Transfer 50% of the traffic from reviews:v1 to reviews:v3 with the following configuration:**
 
 ```command
-kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+kubectl apply -f configs/virtual-service-reviews-50-v3.yaml
 ```
 
 ```yaml
@@ -632,7 +633,7 @@ spec:
 **Assuming you decide that the reviews:v3 microservice is stable, you can route 100% of the traffic to reviews:v3 by applying this virtual service:**
 
 ```command
-kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+kubectl apply -f configs/virtual-service-reviews-v3.yaml
 ```
 
 ```yaml
