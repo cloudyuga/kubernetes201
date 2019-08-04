@@ -1,6 +1,9 @@
+# Volumes
 
+## Slides 
 
-# Simple Volumes.
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTTtncKS5lSGb6kOChwz3n5MU9BplR8tCwOXdfhL-K3WU3TvRnGglrBM_ZAX67YBZpdnlwEgtPR5ZyC/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
 A volume is a directory, usually with some data in it. Volumes are accessible to a container as part of its filesystem. Volumes can be used to store stateful app data or volumes are used to mount some data or storage within the container. When the multiple container in the pod want to share the data across each other then simplest way to mount the volume and share the data.
 
 ## Mounting volumes in different containers
