@@ -116,7 +116,6 @@ Create and deploy the Blue application from following configuration file.
 ```command
  vim configs/blue.yaml
 ```
-
 ```yaml
 ---
 apiVersion: extensions/v1beta1
@@ -150,19 +149,18 @@ spec:
   selector:
     app: blue
 
+
 ```
 
-```command
 Deploy the application
-```
 
 ```command
- kubectl create -f blue.yaml
+ kubectl create -f configs/blue.yaml
 ```
 Create and deploy the Green application from following configuration file.
 
 ```command
-vim green.yaml
+vim configs/green.yaml
 ```
 ```yaml
 ---
@@ -202,13 +200,13 @@ spec:
 Deploy the Green application.
 
 ```command
-kubectl create -f green.yaml
+kubectl create -f configs/green.yaml
 ```
 
 Create a Path based ingress object.
 
 ```command
-vim ingress_path.yaml
+vim configs/ingress_path.yaml
 ```
 
 ```yaml
@@ -254,9 +252,9 @@ path      cy.myweb.com   165.227.120.162   80        25m
  Edit the `/etc/hosts` file and create records of `cy.myweb.com` with above shown address for me it is `165.227.120.162`.
  
  Curl to the `cy.myweb.com/blue` and see the output of curl.
- 
+
 ```command
-curl cy.myweb.com/
+curl cy.myweb.com/blue
 ```
 
 ```
