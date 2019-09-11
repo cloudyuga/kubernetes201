@@ -1,0 +1,29 @@
+---
+title: Introduction to Kubernetes
+questions:
+- title: 1. Who manages and maintains the Kubernetes project?
+  options:
+  - CoreOS
+  - Google
+  - Microsoft
+  - Apache
+  - CNCF
+  answer: 
+  - CNCF
+  
+- title: 2. ETCD is used to store the Kubernetes cluster state
+  options:
+  - True
+  - False
+  answer:
+  - True
+  
+- title: 3. Currently by default, which container runtime is used by Kubernetes?      
+  options:
+  - Docker
+  - Rkt
+  - CRIO
+  - runc
+  answer: 
+  - Docker  
+  
