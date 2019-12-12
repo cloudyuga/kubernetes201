@@ -1,9 +1,8 @@
-# User Authentication 
+# User Authentication
 
 ## Slides
 
 <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQ7Vx9ZNTZxM-_K1HXhnpR78CEwsBSltMObYNjaRdQ1N56XZzaN7G4OPHAi02ZM65f9cMCEd3eQLg51/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-
 
 ## Labs
 
@@ -28,6 +27,7 @@ openssl req -new -key cloudyuga.key -out cloudyuga.csr -subj "/CN=cloudyuga/O=cl
 ```command
 cat cloudyuga.csr | base64 | tr -d '\n'
 ```
+
 ```
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ2R6Q0NBVjhDQVFBd0ZERVNNQkFHQTFVRUF4TUpZMnh
 2ZFdSNWRXZGhNSUlCSWpBTkJna3Foa2lHOXcwQgpBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFtN2N5allaRHlhR1ZZcUs4R2
@@ -50,6 +50,7 @@ tLS0tLQo=
 ```command
 vim signingrequest.yaml
 ```
+
 ```yaml
 apiVersion: certificates.k8s.io/v1beta1
 kind: CertificateSigningRequest
@@ -57,18 +58,18 @@ metadata:
   name: cloudyuga-csr
 spec:
   groups:
-  - system:authenticated
-  request: 
+    - system:authenticated
+  request:
   usages:
-  - digital signature
-  - key encipherment
-  - client auth
+    - digital signature
+    - key encipherment
+    - client auth
 ```
 
 ### Create the CSR.
 
 ```command
-kubectl apply -f signingrequest.yaml 
+kubectl apply -f signingrequest.yaml
 ```
 
 - List the CSR.
@@ -76,6 +77,7 @@ kubectl apply -f signingrequest.yaml
 ```command
 kubectl get csr
 ```
+
 ```
 NAME                                                   AGE       REQUESTOR                                        CONDITION
 cloudyuga-csr                                             44s       kubernetes-admin                                 Pending
@@ -87,10 +89,10 @@ node-csr-abvQ8DWMb_hi1HEJ3ADMKT2unLzErLaSQ9iRrDA3oVM   2h        system:bootstra
 ```command
 kubectl certificate approve cloudyuga-csr
 ```
+
 ```
 certificatesigningrequest "cloudyuga-csr" approved
 ```
-
 
 ### Lets download the certificate from the CSR.
 
@@ -111,14 +113,22 @@ kubectl config set-context cloudyuga-context --cluster=kubernetes \
 --namespace=cloudyuga --user=cloudyuga
 ```
 
-
 ### Try to get pod list with this above created context.
 
 ```command
 kubectl --context=cloudyuga-context get pods
 ```
+
 ```
 Error from server (Forbidden): User "cloudyuga" cannot list pods in the namespace "cloudyuga". (get pods)
 ```
 
 You should get an access denied error when using the kubectl CLI with this configuration file because we have not described any roles or clusterrole for this user.
+
+## Example
+
+Some content
+
+## Example
+
+Some other content
