@@ -124,11 +124,3 @@ Error from server (Forbidden): User "cloudyuga" cannot list pods in the namespac
 ```
 
 You should get an access denied error when using the kubectl CLI with this configuration file because we have not described any roles or clusterrole for this user.
-
-## Example
-
-Some content
-
-## Example
-
-Some other content
