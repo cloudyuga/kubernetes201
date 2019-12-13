@@ -1,4 +1,4 @@
-# Main header
+# Next Chapter
 
 This is the main header part of the course
 
