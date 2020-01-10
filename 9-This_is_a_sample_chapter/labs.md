@@ -17,7 +17,7 @@ Some awesome knowledge here.
 ### Sub heading 3 here
 Some awesome knowledge here.
 
-<iframe src="https//player.vimeo.com/video/80312270" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen ></iframe>
+<iframe src="https://player.vimeo.com/video/80312270" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen ></iframe>
 
 
 
